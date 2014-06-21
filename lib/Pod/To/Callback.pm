@@ -77,7 +77,7 @@ module Pod::To::Callback {
 
 		method !get-satisfy($pod-name, %args) {
 			my @result = ();
-			for self.callbacks{$pod-name}.list>>.kv -> $selector, $functions {
+			for self.callbacks{$pod-name}.list.map({.key, .value}) -> $selector, $functions {
 				my %need-args = filter-args($selector, %args);
 				if ((%need-args ~~ $selector.signature) && ($selector(|%need-args))) {
 					@result.push($functions);
