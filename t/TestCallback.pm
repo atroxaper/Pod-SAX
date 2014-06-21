@@ -42,12 +42,12 @@ plan 16;
 	lives_ok {$instance = Caller.new}, 'create Caller';
 
 	my @para =
-		sub { return True; } => {
-			in => sub (:@draft, :$content) { push @draft, $content; return True; }
+		sub { True; } => {
+			in => sub (:@draft, :$content) { push @draft, $content; True; }
 		};
 	my @format =
-		sub (:$type where {$type eq 'D'}) { return True; } => {
-			in => sub (:@draft, :$content) { push @draft, $content; return True; }
+		sub (:$type where {$type eq 'D'}) { True; } => {
+			in => sub (:@draft, :$content) { push @draft, $content; True; }
 		};
 	$instance.callbacks{Pod::Block::Para.^name} = @para;
 	$instance.callbacks{Pod::FormattingCode.^name} = @format;
@@ -90,10 +90,10 @@ plan 16;
 	my $pod = get-pod($pod-string);
 
 	my @head-calls =
-		sub (:$level, :%config, :@content, :$instance) { return so .defined for $level, %config, @content, $instance;} => {
-			start => sub (:@draft) {@draft.push('start of head'); return True; },
-			stop => sub (:@draft) {@draft.push('stop of head'); return True; },
-			in => sub (:@draft) {@draft.push('in of head'); return True; }
+		sub (:$level, :%config, :@content, :$instance) { return so .defined for $level, %config, @content, $instance; } => {
+			start => sub (:@draft) {@draft.push('start of head'); True; },
+			stop => sub (:@draft) {@draft.push('stop of head'); True; },
+			in => sub (:@draft) {@draft.push('in of head'); True; }
 		};
 
 	my Caller $caller .= new();
@@ -116,20 +116,20 @@ plan 16;
 	my $pod = get-pod($pod-string);
 	my Caller $instance .= new();
 	my @heading =
-		sub { return True; } => {
-			start => sub (:@draft, :$level) { push @draft, "<h$level>"; return True; },
-			stop => sub (:@draft, :$level) { push @draft, "</h$level>"; return True; }
+		sub { True; } => {
+			start => sub (:@draft, :$level) { push @draft, "<h$level>"; True; },
+			stop => sub (:@draft, :$level) { push @draft, "</h$level>"; True; }
 		};
 	my @para =
-		sub (:@history where {@history && @history[*-1] ~~ Pod::Heading}) { return True; } => {
-			in => sub (:@draft, :$content) { push @draft, "big para $content"; return True; }
+		sub (:@history where {@history && @history[*-1] ~~ Pod::Heading}) { True; } => {
+			in => sub (:@draft, :$content) { push @draft, "big para $content"; True; }
 		},
-		sub { return True; } => {
-			in => sub (:@draft, :$content) { push @draft, $content; return True; }
+		sub { True; } => {
+			in => sub (:@draft, :$content) { push @draft, $content; True; }
 		};
 	my @format =
-		sub (:$type where {$type eq 'D'}) { return True; } => {
-			in => sub (:@draft, :$content) { push @draft, $content; return True; }
+		sub (:$type where {$type eq 'D'}) { True; } => {
+			in => sub (:@draft, :$content) { push @draft, $content; True; }
 		};
 	$instance.callbacks{Pod::Heading.^name} = @heading;
 	$instance.callbacks{Pod::Block::Para.^name} = @para;
