@@ -41,16 +41,16 @@ plan 16;
 	my $status;
 	lives_ok {$instance = Caller.new}, 'create Caller';
 
-	my %para{Sub} =
-		sub { return True; }, {
-			in => sub (:@draft, :$content) { push @draft, $content; }
+	my @para =
+		sub { return True; } => {
+			in => sub (:@draft, :$content) { push @draft, $content; return True; }
 		};
-	my %format{Sub} =
-		sub (:$type where {$type eq 'D'}) { return True; }, {
-			in => sub (:@draft, :$content) { push @draft, $content; }
+	my @format =
+		sub (:$type where {$type eq 'D'}) { return True; } => {
+			in => sub (:@draft, :$content) { push @draft, $content; return True; }
 		};
-	$instance.callbacks{Pod::Block::Para.^name} = %para;
-	$instance.callbacks{Pod::FormattingCode.^name} = %format;
+	$instance.callbacks{Pod::Block::Para.^name} = @para;
+	$instance.callbacks{Pod::FormattingCode.^name} = @format;
 
 	lives_ok {$status = $instance.call-for($pod)}, 'call callbacks without exceptions';
 	ok $status == True, 'status is True';
@@ -89,15 +89,15 @@ plan 16;
 		END
 	my $pod = get-pod($pod-string);
 
-	my %head-calls{Sub} =
-		sub (:$level, :%config, :@content, :$instance) { return so .defined for $level, %config, @content, $instance;}, {
-			start => sub (:@draft) {@draft.push('start of head');},
-			stop => sub (:@draft) {@draft.push('stop of head');},
-			in => sub (:@draft) {@draft.push('in of head');}
+	my @head-calls =
+		sub (:$level, :%config, :@content, :$instance) { return so .defined for $level, %config, @content, $instance;} => {
+			start => sub (:@draft) {@draft.push('start of head'); return True; },
+			stop => sub (:@draft) {@draft.push('stop of head'); return True; },
+			in => sub (:@draft) {@draft.push('in of head'); return True; }
 		};
 
 	my Caller $caller .= new();
-	$caller.callbacks{Pod::Heading.^name} = %head-calls;
+	$caller.callbacks{Pod::Heading.^name} = @head-calls;
 
 	$caller.call-for($pod[0]);
 	is $caller.draft.join('|'), 'start of head|stop of head', 'callback for start and stop of head';
@@ -115,25 +115,25 @@ plan 16;
 
 	my $pod = get-pod($pod-string);
 	my Caller $instance .= new();
-	my %heading{Sub} =
-		sub { return True;}, {
+	my @heading =
+		sub { return True; } => {
 			start => sub (:@draft, :$level) { push @draft, "<h$level>"; return True; },
 			stop => sub (:@draft, :$level) { push @draft, "</h$level>"; return True; }
 		};
-	my %para{Sub} =
-		sub (:@history where {@history && @history[*-1] ~~ Pod::Heading}) { return True; } ,{
+	my @para =
+		sub (:@history where {@history && @history[*-1] ~~ Pod::Heading}) { return True; } => {
 			in => sub (:@draft, :$content) { push @draft, "big para $content"; return True; }
 		},
-		sub { return True; }, {
+		sub { return True; } => {
 			in => sub (:@draft, :$content) { push @draft, $content; return True; }
 		};
-	my %format{Sub} =
-		sub (:$type where {$type eq 'D'}) { return True; }, {
+	my @format =
+		sub (:$type where {$type eq 'D'}) { return True; } => {
 			in => sub (:@draft, :$content) { push @draft, $content; return True; }
 		};
-	$instance.callbacks{Pod::Heading.^name} = %heading;
-	$instance.callbacks{Pod::Block::Para.^name} = %para;
-	$instance.callbacks{Pod::FormattingCode.^name} = %format;
+	$instance.callbacks{Pod::Heading.^name} = @heading;
+	$instance.callbacks{Pod::Block::Para.^name} = @para;
+	$instance.callbacks{Pod::FormattingCode.^name} = @format;
 
 	$instance.call-for($pod);
 	is $instance.draft.join('|'), '<h1>|big para 1|</h1>|2|3|4', "history works well";
