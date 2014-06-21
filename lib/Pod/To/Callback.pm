@@ -14,11 +14,12 @@ module Pod::To::Callback {
 		return %result;
 	}
 
-	sub make-attrs($pod, @draft, @history) {
+	sub make-attrs($pod, $caller, @history) {
 		my %result = get-attributes($pod);
 		%result{'instance'} = $pod;
-		%result{'draft'} = @draft;
+		%result{'draft'} = $caller.draft;
 		%result{'history'} = @history;
+		%result{'storage'} = $caller.storage;
 		return %result;
 	}
 
@@ -35,6 +36,7 @@ module Pod::To::Callback {
 		has %.callbacks is rw;
 		has @.allowable-pod-classes is rw = Pod::Block, Pod::Config;
 		has @.draft;
+		has %.storage;
 
 		multi method call-for(@pod) {
 			return so (self.call-for($_) for @pod);
@@ -47,7 +49,7 @@ module Pod::To::Callback {
 		}
 
 		method !visit($pod, @history) {
-			my %attrs = make-attrs($pod, @.draft, @history);
+			my %attrs = make-attrs($pod, self, @history);
 			my @need-to-call = self!get-satisfy($pod.^name, %attrs);
 
 			self!call(@need-to-call, 'start', %attrs);

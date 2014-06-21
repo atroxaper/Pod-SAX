@@ -4,7 +4,7 @@ use Test;
 
 use Pod::To::Callback;
 
-plan 16;
+plan 18;
 
 {#= simple test of parsing a string to Pod
 	my $pod-string = qq:to[END];
@@ -137,4 +137,26 @@ plan 16;
 
 	$instance.call-for($pod);
 	is $instance.draft.join('|'), '<h1>|big para 1|</h1>|2|3|4', "history works well";
+}
+
+{#= test storage
+	my $pod-string = qq:to[END];
+		=begin pod
+
+		=TITLE
+		Synopsis 26 - Documentation
+
+		=end pod
+		END
+
+    my $pod = get-pod($pod-string);
+    my Caller $caller .= new;
+    my @para =
+    	sub (:@history where {@history && @history[*-1] ~~ Pod::Block::Named && @history[*-1].name ~~ 'TITLE'}) { True; } => {
+    		in => sub (:$content, :@draft, :%storage) { push @draft, $content; %storage{'TITLE'} = $content; True; }
+    	};
+	$caller.callbacks{Pod::Block::Para.^name} = @para;
+	$caller.call-for($pod);
+	is $caller.draft.join, 'Synopsis 26 - Documentation', 'call for TITLE ok';
+	is $caller.storage{'TITLE'}, 'Synopsis 26 - Documentation', 'storage works well';
 }
