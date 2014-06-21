@@ -64,26 +64,20 @@ module Pod::To::Callback {
 		}
 
 		method !call(@need-to-call, $type where any('start', 'stop', 'in'), %attrs) {
-			for @need-to-call -> $hash-pairs {
-				my $sub = $hash-pairs{$type};
-				if ? $sub {
-					my %args = filter-args($sub, %attrs);
-					if %args ~~ $sub.signature {
-						my $status = $sub(|%args);
-						if $status {
-							return;
-						}
-					}
+			for @need-to-call.grep({? $_{$type}}).map({$_{$type}}) -> $sub {
+				my %args = filter-args($sub, %attrs);
+				if %args ~~ $sub.signature {
+					return if $sub(|%args);
 				}
 			}
 		}
 
 		method !get-satisfy($pod-name, %args) {
 			my @result = ();
-			for self.callbacks{$pod-name}.list -> $selector-pair {
-				my %need-args = filter-args($selector-pair.key, %args);
-				if ((%need-args ~~ $selector-pair.key.signature) && ($selector-pair.key.(|%need-args))) {
-					@result.push($selector-pair.value);
+			for self.callbacks{$pod-name}.list>>.kv -> $selector, $functions {
+				my %need-args = filter-args($selector, %args);
+				if ((%need-args ~~ $selector.signature) && ($selector(|%need-args))) {
+					@result.push($functions);
 				}
 			}
 			return @result;
