@@ -33,6 +33,7 @@ module Pod::To::Callback {
 
 	class Caller is export {
 		has %.callbacks is rw;
+		has @.allowable-pod-classes is rw = Pod::Block, Pod::Config;
 		has @.draft;
 
 		multi method call-for(@pod) {
@@ -52,11 +53,11 @@ module Pod::To::Callback {
 			self!call(@need-to-call, 'start', %attrs);
 
 			for $pod.content -> $cont {
-				if $cont ~~ Str {
+				if $cont ~~ any(@.allowable-pod-classes) {
+					self!visit($cont, @history.clone.push($pod));
+				} else {
 					%attrs{'content'} = $cont;
 					self!call(@need-to-call, 'in', %attrs);
-				} else {
-					self!visit($cont, @history.clone.push($pod));
 				}
 			}
 
