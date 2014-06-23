@@ -4,7 +4,7 @@ use Test;
 
 use Pod::To::Callback;
 
-plan 21;
+plan 22;
 
 {#= simple test of parsing a string to Pod
 	my $pod-string = qq:to[END];
@@ -159,6 +159,35 @@ plan 21;
 	$caller.call-for($pod);
 	is $caller.draft.join, 'Synopsis 26 - Documentation', 'call for TITLE ok';
 	is $caller.storage{'TITLE'}, 'Synopsis 26 - Documentation', 'storage works well';
+}
+
+{#= test state
+	my $pod-string = qq:to[END];
+		=begin pod
+
+		=TITLE
+		Synopsis 26 - Documentation
+
+		=end pod
+		END
+
+	my $pod = get-pod($pod-string);
+	my Caller $caller .= new;
+	my @para =
+		sub { True; } => {
+			start => sub (:%state) { %state<foo> = 'bar'; True; },
+			in => sub (:$content, :@draft, :%storage) { push @draft, $content; True; },
+			stop => sub (:@draft, :%state) { push @draft, %state<foo>; True; }
+		};
+	my @named =
+		sub (:$name where({$^name eq 'TITLE'})) { True; } => { # TODO why we need '^'
+			start => sub (:%state) { %state<foo> = 'foobar'; True; },
+			stop => sub (:@draft, :%state) { push @draft, %state<foo>; True; }
+		};
+	$caller.callbacks{Pod::Block::Para.^name} = @para;
+	$caller.callbacks{Pod::Block::Named.^name} = @named;
+	$caller.call-for($pod);
+	is $caller.draft.join('|'), 'Synopsis 26 - Documentation|bar|foobar', 'state works well';
 }
 
 {#= test anchor

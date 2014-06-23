@@ -14,12 +14,13 @@ module Pod::To::Callback {
 		return %result;
 	}
 
-	sub make-attrs($pod, $caller, @history) {
+	sub make-attrs($pod, $caller, @history, %state) {
 		my %result = get-attributes($pod);
-		%result{'instance'} = $pod;
-		%result{'draft'} = $caller.draft;
-		%result{'history'} = @history;
-		%result{'storage'} = $caller.storage;
+		%result<instance> = $pod;
+		%result<draft> = $caller.draft;
+		%result<history> = @history;
+		%result<storage> = $caller.storage;
+		%result<state> = %state;
 		return %result;
 	}
 
@@ -49,7 +50,7 @@ module Pod::To::Callback {
 		}
 
 		method !visit($pod, @history) {
-			my %attrs = make-attrs($pod, self, @history);
+			my %attrs = make-attrs($pod, self, @history, {});
 			my @need-to-call = self!get-satisfy($pod.^name, %attrs);
 
 			self!call(@need-to-call, 'start', %attrs);
