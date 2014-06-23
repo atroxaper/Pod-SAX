@@ -4,7 +4,7 @@ use Test;
 
 use Pod::To::Callback;
 
-plan 18;
+plan 21;
 
 {#= simple test of parsing a string to Pod
 	my $pod-string = qq:to[END];
@@ -159,4 +159,12 @@ plan 18;
 	$caller.call-for($pod);
 	is $caller.draft.join, 'Synopsis 26 - Documentation', 'call for TITLE ok';
 	is $caller.storage{'TITLE'}, 'Synopsis 26 - Documentation', 'storage works well';
+}
+
+{#= test anchor
+	my SimpleAnchor $anchor .= new(:source('<title><%=title%></title>'));
+	nok $anchor.prepare(:storage({})), 'prepare of anchor returns false';
+	my %storage = title => 'this is test title';
+	ok $anchor.prepare(:%storage), 'prepare of anchor returns true';
+	is $anchor, '<title>this is test title</title>', 'anchor works well';
 }

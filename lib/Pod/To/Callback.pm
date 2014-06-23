@@ -86,4 +86,39 @@ module Pod::To::Callback {
 			return @result;
 		}
 	}
+
+	role Anchor is export {
+		has Bool $.prepared is rw = False;
+		has Str $!result = '';
+
+		multi method gist() {
+			return $!result;
+		}
+
+		multi method Str() {
+			return $!result;
+		}
+
+		method prepare(:%storage) {
+			my $this = self;
+			self.get-source ~~ m:g/ '<%' ['=']? $<key>=[ [ <!before '%>' > . ]* ] '%>' { unless %storage{$<key>.Str} {
+				$this.prepared = False;
+				return $this.prepared;
+			}} /;
+			$!result = self.get-source;
+			$!result ~~ s:g/ '<%' ['=']? $<key>=[ [ <!before '%>' > . ]* ] '%>' /%storage{$<key>.Str}/;
+			$.prepared = True;
+			return $.prepared;
+		}
+
+		method get-source() { ... }
+	}
+
+	class SimpleAnchor does Anchor is export {
+		has $.source is rw;
+
+		method get-source() {
+			return $.source;
+		}
+	}
 }
