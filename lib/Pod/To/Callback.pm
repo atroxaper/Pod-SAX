@@ -90,7 +90,9 @@ module Pod::To::Callback {
 
 	role Anchor is export {
 		has Bool $.prepared is rw = False;
-		has Str $!result = '';
+		has $.priority = 0;
+		has $.source is rw;
+		has $!result = '';
 
 		multi method gist() {
 			return $!result;
@@ -111,12 +113,6 @@ module Pod::To::Callback {
 			$.prepared = True;
 			return $.prepared;
 		}
-
-		method get-source() { ... }
-	}
-
-	class SimpleAnchor does Anchor is export {
-		has $.source is rw;
 
 		method get-source() {
 			return $.source;

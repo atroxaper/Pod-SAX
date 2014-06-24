@@ -190,8 +190,10 @@ plan 22;
 	is $caller.draft.join('|'), 'Synopsis 26 - Documentation|bar|foobar', 'state works well';
 }
 
+class TestAnchor does Anchor is export {}
+
 {#= test anchor
-	my SimpleAnchor $anchor .= new(:source('<title><%=title%></title>'));
+	my TestAnchor $anchor .= new(:source('<title><%=title%></title>'));
 	nok $anchor.prepare(:storage({})), 'prepare of anchor returns false';
 	my %storage = title => 'this is test title';
 	ok $anchor.prepare(:%storage), 'prepare of anchor returns true';
