@@ -4,7 +4,7 @@ use Test;
 
 use Pod::To::Callback;
 
-plan 22;
+plan 23;
 
 {#= simple test of parsing a string to Pod
 	my $pod-string = qq:to[END];
@@ -198,4 +198,34 @@ class TestAnchor does Anchor is export {}
 	my %storage = title => 'this is test title';
 	ok $anchor.prepare(:%storage), 'prepare of anchor returns true';
 	is $anchor, '<title>this is test title</title>', 'anchor works well';
+}
+
+{#= test anchor calling
+	my $pod-string = qq:to[END];
+		=begin pod
+
+		=TITLE
+		Synopsis 26 - Documentation
+
+		=end pod
+		END
+	my $pod = get-pod($pod-string);
+	my Caller $caller .= new;
+	my @para =
+		sub { True; } => {
+			start => sub (:@draft) { push @draft, TestAnchor.new(:source('<p><%=para1%></p>'), :priority(0)); True; },
+			in => sub (:@draft) { push @draft, TestAnchor.new(:source('<p><%=para2%></p>'), :priority(0)); True; },
+			stop => sub (:@draft) { push @draft, TestAnchor.new(:source('<p><%=para3%></p>'), :priority(0)); True; },
+		};
+	my @named =
+		sub (:$name where({$^name eq 'TITLE'})) { True; } => { # TODO why we need '^'
+			start => sub (:@draft) { push @draft, TestAnchor.new(:source('<title><%=TITLE%></title>'), :priority(0)); True; },
+			stop => sub (:%storage) { %storage<para1> = 'p1'; %storage<para2> = 'p2';
+				%storage<para3> = 'p3'; %storage<TITLE> = 'title'; %storage<foo> = 'bar'; }
+		};
+	$caller.callbacks{Pod::Block::Para.^name} = @para;
+	$caller.callbacks{Pod::Block::Named.^name} = @named;
+	$caller.call-for($pod);
+	is $caller.get-result, '<title>title</title><p>p1</p><p>p2</p><p>p3</p>',
+		'result and anchors calling without priority works well';
 }

@@ -86,6 +86,20 @@ module Pod::To::Callback {
 			}
 			return @result;
 		}
+
+		method get-result() {
+			my @anchors-pairs = %(@.draft.grep({!($_ ~~ Str)}).kv).sort({$^a.value.priority <=> $^b.value.priority});
+			loop (my $i = 0; $i < +@anchors-pairs; ++$i) {
+				my $is-somebody-false = True;
+				for @anchors-pairs.map({$_.kv}) -> $index, $anchor {
+					if (! $anchor.prepared) {
+						$is-somebody-false = $anchor.prepare(:%.storage) && $is-somebody-false;
+					}
+				}
+				last if $is-somebody-false;
+			}
+			return @.draft.join;
+		}
 	}
 
 	role Anchor is export {
