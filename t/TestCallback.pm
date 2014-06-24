@@ -47,14 +47,14 @@ plan 22;
 		};
 	my @format =
 		sub (:$type where {$type eq 'D'}) { True; } => {
-			in => sub (:@draft, :$content) { push @draft, $content; True; }
+			in => sub (:@draft, :$content) { push @draft, 'D' ~ $content ~ 'D'; True; }
 		};
 	$instance.callbacks{Pod::Block::Para.^name} = @para;
 	$instance.callbacks{Pod::FormattingCode.^name} = @format;
 
 	lives_ok {$status = $instance.call-for($pod)}, 'call callbacks without exceptions';
 	ok $status == True, 'status is True';
-	is $instance.draft.join('|'), '1|2|3|4', 'result array in right order';
+	is $instance.draft.join('|'), '1|2|D3D|4', 'result array in right order';
 }
 
 {#= get-attributes testing
@@ -129,14 +129,14 @@ plan 22;
 		};
 	my @format =
 		sub (:$type where {$type eq 'D'}) { True; } => {
-			in => sub (:@draft, :$content) { push @draft, $content; True; }
+			in => sub (:@draft, :$content) { push @draft, 'D' ~ $content ~ 'D'; True; }
 		};
 	$instance.callbacks{Pod::Heading.^name} = @heading;
 	$instance.callbacks{Pod::Block::Para.^name} = @para;
 	$instance.callbacks{Pod::FormattingCode.^name} = @format;
 
 	$instance.call-for($pod);
-	is $instance.draft.join('|'), '<h1>|big para 1|</h1>|2|3|4', "history works well";
+	is $instance.draft.join('|'), '<h1>|big para 1|</h1>|2|D3D|4', "history works well";
 }
 
 {#= test storage
