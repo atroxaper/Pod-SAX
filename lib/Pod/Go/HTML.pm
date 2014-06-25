@@ -3,8 +3,6 @@ module Pod::Go::HTML {
 
 	my $N = "\n";
 
-	class AnAnchor does Anchor is export {}
-
 	my @comment =
 		sub { True; } => {
 			in => sub (:$content) { say qq[find comment: $content]; True; }
@@ -14,7 +12,7 @@ module Pod::Go::HTML {
 			start => sub (:@draft) {
 				@draft.push(
 					qq[<!doctype html>{$N}<html>{$N}<head>{$N}],
-					AnAnchor.new(:source(qq[<title><%=TITLE%></title>{$N}])),
+					SimpleAnchor.new(:template(qq[<title><%=TITLE%></title>{$N}])),
 					qq[</head>{$N}<body class="pod" id="___top">{$N}]
 				);
 				True;
