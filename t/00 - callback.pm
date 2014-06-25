@@ -190,14 +190,20 @@ plan 23;
 	is $caller.draft.join('|'), 'Synopsis 26 - Documentation|bar|foobar', 'state works well';
 }
 
-class TestAnchor does Anchor is export {}
-
-{#= test anchor
-	my TestAnchor $anchor .= new(:source('<title><%=title%></title>'));
-	nok $anchor.prepare(:storage({})), 'prepare of anchor returns false';
-	my %storage = title => 'this is test title';
-	ok $anchor.prepare(:%storage), 'prepare of anchor returns true';
+{#= test SimpeleAnchor
+	my SimpleAnchor $anchor .= new(:template('<title><%=title%></title>'), :storage({}));
+	nok $anchor.prepare(), 'prepare of anchor returns false';
+	$anchor.storage = title => 'this is test title';
+	ok $anchor.prepare(), 'prepare of anchor returns true';
 	is $anchor, '<title>this is test title</title>', 'anchor works well';
+}
+
+{#= test init-anchor sub
+	my SimpleAnchor $anchor .= new(:template('<title><%=title%></title>'));
+	nok $anchor.storage, 'anchor storage is undefined yet';
+	init-anchor($anchor, {draft => (1, 2, 3), storage => {a => 42, b => 43}});
+	ok $anchor.storage, 'anchor storage is defined now';
+	is_deeply $anchor.storage, {a => 42, b => 43}, 'init-anchor works well';
 }
 
 {#= test anchor calling
@@ -213,13 +219,13 @@ class TestAnchor does Anchor is export {}
 	my Caller $caller .= new;
 	my @para =
 		sub { True; } => {
-			start => sub (:@draft) { push @draft, TestAnchor.new(:source('<p><%=para1%></p>'), :priority(0)); True; },
-			in => sub (:@draft) { push @draft, TestAnchor.new(:source('<p><%=para2%></p>'), :priority(0)); True; },
-			stop => sub (:@draft) { push @draft, TestAnchor.new(:source('<p><%=para3%></p>'), :priority(0)); True; },
+			start => sub (:@draft) { push @draft, SimpleAnchor.new(:template('<p><%=para1%></p>'), :priority(0)); True; },
+			in => sub (:@draft) { push @draft, SimpleAnchor.new(:template('<p><%=para2%></p>'), :priority(0)); True; },
+			stop => sub (:@draft) { push @draft, SimpleAnchor.new(:template('<p><%=para3%></p>'), :priority(0)); True; },
 		};
 	my @named =
 		sub (:$name where({$^name eq 'TITLE'})) { True; } => { # TODO why we need '^'
-			start => sub (:@draft) { push @draft, TestAnchor.new(:source('<title><%=TITLE%></title>'), :priority(0)); True; },
+			start => sub (:@draft) { push @draft, SimpleAnchor.new(:template('<title><%=TITLE%></title>'), :priority(0)); True; },
 			stop => sub (:%storage) { %storage<para1> = 'p1'; %storage<para2> = 'p2';
 				%storage<para3> = 'p3'; %storage<TITLE> = 'title'; %storage<foo> = 'bar'; }
 		};

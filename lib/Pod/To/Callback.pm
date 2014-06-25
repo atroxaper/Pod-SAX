@@ -14,6 +14,26 @@ module Pod::To::Callback {
 		return %result;
 	}
 
+	sub filter-args($sub,  %args) {
+		my @param-names = $sub.signature.params.map: *.name.substr(1);
+		my %result;
+		for %args.keys -> $key {
+			%result{$key} = %args{$key} if $key eq any(@param-names);
+		}
+		return %result;
+	}
+
+	#= Initialize Anchor object some dates by is rw fields ob object.
+	#= Now we can insert only current %storage and @draft.
+	sub init-anchor($anchor, %args) is export {
+		for $anchor.^attributes.grep({.rw}) {
+			my $name = $_.name.substr(2);
+			if ($name ~~ any(%args.keys)) {
+				$anchor."$name"() = %args{$name};
+			}
+		}
+	}
+
 	sub make-attrs($pod, $caller, @history, %state) {
 		my %result = get-attributes($pod);
 		%result<instance> = $pod;
@@ -24,13 +44,10 @@ module Pod::To::Callback {
 		return %result;
 	}
 
-	sub filter-args($sub,  %args) {
-		my @param-names = $sub.signature.params.map: *.name.substr(1);
-		my %result;
-		for %args.keys -> $key {
-			%result{$key} = %args{$key} if $key eq any(@param-names);
-		}
-		return %result;
+	role Anchor is export {
+		method prepared(--> Bool) { ... }
+		method priority(--> Int) { ... }
+		method prepare(--> Bool) { ... }
 	}
 
 	class Caller is export {
@@ -88,12 +105,15 @@ module Pod::To::Callback {
 		}
 
 		method get-result() {
-			my @anchors-pairs = %(@.draft.grep({!($_ ~~ Str)}).kv).sort({$^a.value.priority <=> $^b.value.priority});
-			loop (my $i = 0; $i < +@anchors-pairs; ++$i) {
+			# sort by priority and get anchor and its index in draft #
+			my @anchors = @.draft.grep({$_ ~~ Anchor}).sort({$^a.priority <=> $^b.priority});
+			init-anchor($_, {:draft(@.draft), :storage(%.storage)}) for @anchors;
+
+			loop (my $i = 0; $i < +@anchors; ++$i) {
 				my $is-somebody-false = True;
-				for @anchors-pairs.map({$_.kv}) -> $index, $anchor {
-					if (! $anchor.prepared) {
-						$is-somebody-false = $anchor.prepare(:%.storage) && $is-somebody-false;
+				for @anchors -> $anchor {
+					unless $anchor.prepared {
+						$is-somebody-false = $anchor.prepare() && $is-somebody-false;
 					}
 				}
 				last if $is-somebody-false;
@@ -102,10 +122,14 @@ module Pod::To::Callback {
 		}
 	}
 
-	role Anchor is export {
+	class SimpleAnchor does Anchor is export {
+		# for role satisfaction  #
 		has Bool $.prepared is rw = False;
-		has $.priority = 0;
-		has $.source is rw;
+		has Int $.priority = 0;
+
+		has $.template is rw;
+		has %.storage is rw;
+
 		has $!result = '';
 
 		multi method gist() {
@@ -116,20 +140,16 @@ module Pod::To::Callback {
 			return $!result;
 		}
 
-		method prepare(:%storage) {
+		method prepare() {
 			my $this = self;
-			self.get-source ~~ m:g/ '<%' ['=']? $<key>=[ [ <!before '%>' > . ]* ] '%>' { unless %storage{$<key>.Str} {
+			self.template ~~ m:g/ '<%' ['=']? $<key>=[ [ <!before '%>' > . ]* ] '%>' { unless $this.storage{$<key>.Str} {
 				$this.prepared = False;
 				return $this.prepared;
 			}} /;
-			$!result = self.get-source;
-			$!result ~~ s:g/ '<%' ['=']? $<key>=[ [ <!before '%>' > . ]* ] '%>' /%storage{$<key>.Str}/;
+			$!result = $.template;
+			$!result ~~ s:g/ '<%' ['=']? $<key>=[ [ <!before '%>' > . ]* ] '%>' /%.storage{$<key>.Str}/;
 			$.prepared = True;
 			return $.prepared;
-		}
-
-		method get-source() {
-			return $.source;
 		}
 	}
 }
