@@ -2,7 +2,7 @@ use v6;
 
 use Test;
 
-use Pod::To::Callback;
+use Pod::Callback;
 
 plan 23;
 

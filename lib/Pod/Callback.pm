@@ -1,4 +1,4 @@
-module Pod::To::Callback {
+module Pod::Callback {
 	sub get-pod(Str $source) is export {
 		EVAL $source ~ "\n\$=pod";
 	}

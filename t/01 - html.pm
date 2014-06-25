@@ -2,8 +2,8 @@ use v6;
 
 use Test;
 
-use Pod::Go::HTML;
-use Pod::To::Callback;
+use Pod::Goes::HTML;
+use Pod::Callback;
 
 plan 1;
 

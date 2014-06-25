@@ -1,5 +1,5 @@
-module Pod::Go::HTML {
-	use Pod::To::Callback;
+module Pod::Goes::HTML {
+	use Pod::Callback;
 
 	my $N = "\n";
 
@@ -8,6 +8,7 @@ module Pod::Go::HTML {
 			in => sub (:$content) { say qq[find comment: $content]; True; }
 		};
 	my @named =
+		# =begin pod
 		sub ( :$name where {$name ~~ "pod"}) { True; } => {
 			start => sub (:@draft) {
 				@draft.push(
@@ -23,6 +24,7 @@ module Pod::Go::HTML {
 			}
 		};
 	my @para =
+		# Title #
 		sub (:@history where {@history && @history[*-1] ~~ Pod::Block::Named && @history[*-1].name ~~ 'TITLE'}) { True; } => {
 			in => sub (:$content, :@draft, :%storage) {
 				push @draft, qq[<h1>{$content}</h1>{$N}];
