@@ -1,4 +1,4 @@
-module Pod::Callback {
+module Pod::Nearby {
 	sub get-pod(Str $source) is export {
 		EVAL $source ~ "\n\$=pod";
 	}
@@ -50,17 +50,17 @@ module Pod::Callback {
 		method prepare(--> Bool) { ... }
 	}
 
-	class Caller is export {
+	class Nearer is export {
 		has %.callbacks is rw;
 		has @.allowable-pod-classes is rw = Pod::Block, Pod::Config;
 		has @.draft;
 		has %.storage;
 
-		multi method call-for(@pod) {
-			return so (self.call-for($_) for @pod);
+		multi method approach-to(@pod) {
+			return so (self.approach-to($_) for @pod);
 		}
 
-		multi method call-for($pod) {
+		multi method approach-to($pod) {
 			my @history;
 			self!visit($pod, @history);
 			return True;

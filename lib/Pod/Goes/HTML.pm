@@ -1,5 +1,5 @@
 module Pod::Goes::HTML {
-	use Pod::Callback;
+	use Pod::Nearby;
 
 	my $N = "\n";
 
@@ -32,12 +32,12 @@ module Pod::Goes::HTML {
 			}
 		};
 
-	sub make-caller() is export {
-		my Caller $caller .= new;
-		$caller.callbacks{Pod::Block::Comment.^name} = @comment;
-		$caller.callbacks{Pod::Block::Named.^name} = @named;
-		$caller.callbacks{Pod::Block::Para.^name} = @para;
+	sub make-nearer() is export {
+		my Nearer $nearer .= new;
+		$nearer.callbacks{Pod::Block::Comment.^name} = @comment;
+		$nearer.callbacks{Pod::Block::Named.^name} = @named;
+		$nearer.callbacks{Pod::Block::Para.^name} = @para;
 
-		return $caller;
+		return $nearer;
 	}
 }

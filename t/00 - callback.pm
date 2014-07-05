@@ -2,7 +2,7 @@ use v6;
 
 use Test;
 
-use Pod::Callback;
+use Pod::Nearby;
 
 plan 23;
 
@@ -39,7 +39,7 @@ plan 23;
 	my $pod = get-pod($pod-string);
 	my $instance;
 	my $status;
-	lives_ok {$instance = Caller.new}, 'create Caller';
+	lives_ok {$instance = Nearer.new}, 'create Nearer';
 
 	my @para =
 		sub { True; } => {
@@ -52,7 +52,7 @@ plan 23;
 	$instance.callbacks{Pod::Block::Para.^name} = @para;
 	$instance.callbacks{Pod::FormattingCode.^name} = @format;
 
-	lives_ok {$status = $instance.call-for($pod)}, 'call callbacks without exceptions';
+	lives_ok {$status = $instance.approach-to($pod)}, 'call callbacks without exceptions';
 	ok $status == True, 'status is True';
 	is $instance.draft.join('|'), '1|2|D3D|4', 'result array in right order';
 }
@@ -96,10 +96,10 @@ plan 23;
 			in => sub (:@draft) {@draft.push('in of head'); True; }
 		};
 
-	my Caller $caller .= new();
+	my Nearer $caller .= new();
 	$caller.callbacks{Pod::Heading.^name} = @head-calls;
 
-	$caller.call-for($pod[0]);
+	$caller.approach-to($pod[0]);
 	is $caller.draft.join('|'), 'start of head|stop of head', 'callback for start and stop of head';
 }
 
@@ -114,7 +114,7 @@ plan 23;
 		END
 
 	my $pod = get-pod($pod-string);
-	my Caller $instance .= new();
+	my Nearer $nearer .= new();
 	my @heading =
 		sub { True; } => {
 			start => sub (:@draft, :$level) { push @draft, "<h$level>"; True; },
@@ -131,12 +131,12 @@ plan 23;
 		sub (:$type where {$type eq 'D'}) { True; } => {
 			in => sub (:@draft, :$content) { push @draft, 'D' ~ $content ~ 'D'; True; }
 		};
-	$instance.callbacks{Pod::Heading.^name} = @heading;
-	$instance.callbacks{Pod::Block::Para.^name} = @para;
-	$instance.callbacks{Pod::FormattingCode.^name} = @format;
+	$nearer.callbacks{Pod::Heading.^name} = @heading;
+	$nearer.callbacks{Pod::Block::Para.^name} = @para;
+	$nearer.callbacks{Pod::FormattingCode.^name} = @format;
 
-	$instance.call-for($pod);
-	is $instance.draft.join('|'), '<h1>|big para 1|</h1>|2|D3D|4', "history works well";
+	$nearer.approach-to($pod);
+	is $nearer.draft.join('|'), '<h1>|big para 1|</h1>|2|D3D|4', "history works well";
 }
 
 {#= test storage
@@ -150,13 +150,13 @@ plan 23;
 		END
 
     my $pod = get-pod($pod-string);
-    my Caller $caller .= new;
+    my Nearer $caller .= new;
     my @para =
     	sub (:@history where {@history && @history[*-1] ~~ Pod::Block::Named && @history[*-1].name ~~ 'TITLE'}) { True; } => {
     		in => sub (:$content, :@draft, :%storage) { push @draft, $content; %storage{'TITLE'} = $content; True; }
     	};
 	$caller.callbacks{Pod::Block::Para.^name} = @para;
-	$caller.call-for($pod);
+	$caller.approach-to($pod);
 	is $caller.draft.join, 'Synopsis 26 - Documentation', 'call for TITLE ok';
 	is $caller.storage{'TITLE'}, 'Synopsis 26 - Documentation', 'storage works well';
 }
@@ -172,7 +172,7 @@ plan 23;
 		END
 
 	my $pod = get-pod($pod-string);
-	my Caller $caller .= new;
+	my Nearer $nearer .= new;
 	my @para =
 		sub { True; } => {
 			start => sub (:%state) { %state<foo> = 'bar'; True; },
@@ -184,10 +184,10 @@ plan 23;
 			start => sub (:%state) { %state<foo> = 'foobar'; True; },
 			stop => sub (:@draft, :%state) { push @draft, %state<foo>; True; }
 		};
-	$caller.callbacks{Pod::Block::Para.^name} = @para;
-	$caller.callbacks{Pod::Block::Named.^name} = @named;
-	$caller.call-for($pod);
-	is $caller.draft.join('|'), 'Synopsis 26 - Documentation|bar|foobar', 'state works well';
+	$nearer.callbacks{Pod::Block::Para.^name} = @para;
+	$nearer.callbacks{Pod::Block::Named.^name} = @named;
+	$nearer.approach-to($pod);
+	is $nearer.draft.join('|'), 'Synopsis 26 - Documentation|bar|foobar', 'state works well';
 }
 
 {#= test SimpeleAnchor
@@ -216,7 +216,7 @@ plan 23;
 		=end pod
 		END
 	my $pod = get-pod($pod-string);
-	my Caller $caller .= new;
+	my Nearer $nearer .= new;
 	my @para =
 		sub { True; } => {
 			start => sub (:@draft) { push @draft, SimpleAnchor.new(:template('<p><%=para1%></p>'), :priority(0)); True; },
@@ -229,9 +229,9 @@ plan 23;
 			stop => sub (:%storage) { %storage<para1> = 'p1'; %storage<para2> = 'p2';
 				%storage<para3> = 'p3'; %storage<TITLE> = 'title'; %storage<foo> = 'bar'; }
 		};
-	$caller.callbacks{Pod::Block::Para.^name} = @para;
-	$caller.callbacks{Pod::Block::Named.^name} = @named;
-	$caller.call-for($pod);
-	is $caller.get-result, '<title>title</title><p>p1</p><p>p2</p><p>p3</p>',
+	$nearer.callbacks{Pod::Block::Para.^name} = @para;
+	$nearer.callbacks{Pod::Block::Named.^name} = @named;
+	$nearer.approach-to($pod);
+	is $nearer.get-result, '<title>title</title><p>p1</p><p>p2</p><p>p3</p>',
 		'result and anchors calling without priority works well';
 }
