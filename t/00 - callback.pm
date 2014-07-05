@@ -4,7 +4,7 @@ use Test;
 
 use Pod::Nearby;
 
-plan 23;
+plan 28;
 
 {#= simple test of parsing a string to Pod
 	my $pod-string = qq:to[END];
@@ -96,11 +96,11 @@ plan 23;
 			in => sub (:@draft) {@draft.push('in of head'); True; }
 		};
 
-	my Nearer $caller .= new();
-	$caller.callbacks{Pod::Heading.^name} = @head-calls;
+	my Nearer $nearer .= new();
+	$nearer.callbacks{Pod::Heading.^name} = @head-calls;
 
-	$caller.approach-to($pod[0]);
-	is $caller.draft.join('|'), 'start of head|stop of head', 'callback for start and stop of head';
+	$nearer.approach-to($pod[0]);
+	is $nearer.draft.join('|'), 'start of head|stop of head', 'callback for start and stop of head';
 }
 
 {#= history support test
@@ -139,7 +139,7 @@ plan 23;
 	is $nearer.draft.join('|'), '<h1>|big para 1|</h1>|2|D3D|4', "history works well";
 }
 
-{#= test storage
+{#= test storage and clear
 	my $pod-string = qq:to[END];
 		=begin pod
 
@@ -150,15 +150,21 @@ plan 23;
 		END
 
     my $pod = get-pod($pod-string);
-    my Nearer $caller .= new;
+    my Nearer $nearer .= new;
     my @para =
     	sub (:@history where {@history && @history[*-1] ~~ Pod::Block::Named && @history[*-1].name ~~ 'TITLE'}) { True; } => {
     		in => sub (:$content, :@draft, :%storage) { push @draft, $content; %storage{'TITLE'} = $content; True; }
     	};
-	$caller.callbacks{Pod::Block::Para.^name} = @para;
-	$caller.approach-to($pod);
-	is $caller.draft.join, 'Synopsis 26 - Documentation', 'call for TITLE ok';
-	is $caller.storage{'TITLE'}, 'Synopsis 26 - Documentation', 'storage works well';
+	$nearer.callbacks{Pod::Block::Para.^name} = @para;
+	$nearer.approach-to($pod);
+	is $nearer.draft.join, 'Synopsis 26 - Documentation', 'call for TITLE ok';
+	is $nearer.storage{'TITLE'}, 'Synopsis 26 - Documentation', 'storage works well';
+
+	$nearer.approach-to($pod);
+	isnt $nearer.draft.join, 'Synopsis 26 - Documentation', 'two calls in a row did different result';
+	$nearer.clear();
+	$nearer.approach-to($pod);
+	is $nearer.draft.join, 'Synopsis 26 - Documentation', 'two calls in a row with clear did the same result';
 }
 
 {#= test state
@@ -234,4 +240,30 @@ plan 23;
 	$nearer.approach-to($pod);
 	is $nearer.get-result, '<title>title</title><p>p1</p><p>p2</p><p>p3</p>',
 		'result and anchors calling without priority works well';
+}
+
+{#= test selector's helpers
+	my $pod-string = qq:to[END];
+		=begin pod
+
+		=TITLE
+		Synopsis 26 - Documentation
+
+		=end pod
+		END
+	my $pod = get-pod($pod-string);
+	my Nearer $nearer .= new;
+	my @para =
+		sub (:@history where {@history.&under-name('TITLE')}) { True; } => {
+			start => sub (:@draft) { push @draft, 'under title'; True; }
+		};
+	my @named =
+		sub (:@history where {@history.&under-type(Pod::Block::Named)}) { True; } => {
+			start => sub (:@draft) { push @draft, 'under named'; True; }
+		};
+	$nearer.callbacks{Pod::Block::Para.^name} = @para;
+	$nearer.callbacks{Pod::Block::Named.^name} = @named;
+
+	$nearer.approach-to($pod);
+	is $nearer.draft.join('|'), 'under named|under title', "selector's helpers works well"
 }

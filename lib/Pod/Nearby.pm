@@ -56,6 +56,11 @@ module Pod::Nearby {
 		has @.draft;
 		has %.storage;
 
+		method clear() {
+			@.draft = ();
+			%.storage = ();
+		}
+
 		multi method approach-to(@pod) {
 			return so (self.approach-to($_) for @pod);
 		}
@@ -151,5 +156,13 @@ module Pod::Nearby {
 			$.prepared = True;
 			return $.prepared;
 		}
+	}
+
+	sub under-name(@history, $name --> Bool) is export {
+		return so @history && @history[*-1] ~~ Pod::Block::Named && @history[*-1].name ~~ $name;
+	}
+
+	sub under-type(@history, $type --> Bool) is export {
+		return so @history && @history[*-1] ~~ $type;
 	}
 }
