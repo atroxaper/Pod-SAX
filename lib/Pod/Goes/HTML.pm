@@ -5,7 +5,7 @@ module Pod::Goes::HTML {
 
 	my @comment =
 		sub { True; } => {
-			in => sub (:$content) { say qq[find comment: $content]; True; }
+			in => sub (:$content) { say qq[find comment: $content]; }
 		};
 	my @named =
 		# =begin pod
@@ -16,33 +16,38 @@ module Pod::Goes::HTML {
 					SimpleAnchor.new(:template(qq[<title><%=TITLE%></title>{$N}])),
 					qq[</head>{$N}<body class="pod" id="___top">{$N}]
 				);
-				True;
 			},
 			stop => sub (:@draft) {
 				@draft.push(qq[</body>{$N}</html>{$N}]);
-				True;
 			}
 		},
 		sub (:$name where {$name ~~ any('VERSION', 'AUTHOR')}) { True; } => {
-			start => sub (:@draft, :$name) { push @draft, qq[<section>{$N}<h1>{$name}</h1>{$N}]; True; },
-			stop =>  sub (:@draft) { push @draft, qq[</section>{$N}]; True; },
+			start => sub (:@draft, :$name) { push @draft, qq[<section>{$N}<h1>{$name}</h1>{$N}]; },
+			stop =>  sub (:@draft) { push @draft, qq[</section>{$N}]; }
 		};
 	my @para =
 		# Title #
 		sub (:@history where {@history.&under-name('TITLE')}) { True; } => {
-			start => sub (:@draft) { push @draft, q[<h1>]; True; },
+			start => sub (:@draft) { push @draft, q[<h1>]; },
 			in => sub (:$content, :@draft, :%storage) {
-				push @draft, qq[{$content}{$N}];
+				push @draft, qq[{$content}];
 				%storage{'TITLE'} = $content;
-				True;
 			},
-			stop => sub (:@draft) { push @draft, q[</h1>]; True; }
+			stop => sub (:@draft) { push @draft, q[</h1>]; }
+		},
+		sub (:@history where {@history.&under-type(Pod::Heading)}) { True; } => {
+			start => sub { True; },
+			in => sub (:$content, :@draft, :%storage) {
+				push @draft, qq[{$content}];
+				# TODO add code for table of contents
+			},
+			stop => sub { True; }
 		},
 		# General Paragraph #
 		sub { True; } => {
-			start => sub (:@draft) { push @draft, "<p>"; True; },
-			in => sub (:@draft, :$content) { push @draft, $content; True; },
-			stop => sub (:@draft) { push @draft, "</p>"; True; },
+			start => sub (:@draft) { push @draft, "<p>"; },
+			in => sub (:@draft, :$content) { push @draft, $content; },
+			stop => sub (:@draft) { push @draft, "</p>"; }
 		};
 	my @table =
 		sub { True; } => {
@@ -59,7 +64,6 @@ module Pod::Goes::HTML {
 				}
 
 				push @draft, qq[<tbody>{$N}];
-				True;
 			},
 			in => sub (:$content, :@draft) {
 				push @draft, qq[<tr>{$N}];
@@ -67,19 +71,23 @@ module Pod::Goes::HTML {
 					push @draft, qq[<td>{$td}</td>{$N}];
 				}
 				push @draft, qq[</tr>{$N}];
-				True;
 			},
-			stop => sub (:@draft) {	push @draft, qq[</tbody>{$N}</table>{$N}]; True; }
+			stop => sub (:@draft) {	push @draft, qq[</tbody>{$N}</table>{$N}]; }
 		};
 	my @formatting =
 		sub (:$type where {$type ~~ 'L'}) { True; } => {
-			start => sub (:@draft, :@meta) { push @draft, qq[<a href="{@meta[0]}">]; True; },
-			stop => sub (:@draft) {	push @draft, qq[</a>]; True; }
+			start => sub (:@draft, :@meta) { push @draft, qq[<a href="{@meta[0]}">]; },
+			stop => sub (:@draft) {	push @draft, qq[</a>]; }
 		},
 		sub (:$type where {$type ~~ 'C'}) { True; } => {
-			start => sub (:@draft) { push @draft, qq[<code>]; True; },
-			in => sub (:@draft, :$content) { push @draft, $content; True; },
-			stop => sub (:@draft) { push @draft, q[</code>]; True; }
+			start => sub (:@draft) { push @draft, qq[<code>]; },
+			in => sub (:@draft, :$content) { push @draft, $content; },
+			stop => sub (:@draft) { push @draft, q[</code>]; }
+		};
+	my @heading =
+		sub { True; } => {
+			start => sub (:@draft, :$level) { push @draft, qq[<h{$level}>]; },
+			stop => sub (:@draft, :$level) { push @draft, qq[</h{$level}>]; }
 		};
 
 	sub make-nearer() is export {
@@ -89,6 +97,7 @@ module Pod::Goes::HTML {
 		$nearer.callbacks{Pod::Block::Para.^name} = @para;
 		$nearer.callbacks{Pod::Block::Table.^name} = @table;
 		$nearer.callbacks{Pod::FormattingCode.^name} = @formatting;
+		$nearer.callbacks{Pod::Heading.^name} = @heading;
 
 		return $nearer;
 	}
