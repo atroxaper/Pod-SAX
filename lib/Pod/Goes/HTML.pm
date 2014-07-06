@@ -38,7 +38,7 @@ module Pod::Goes::HTML {
 		sub (:@history where {@history.&under-type(Pod::Heading)}) { True; } => {
 			start => sub { True; },
 			in => sub (:$content, :@draft, :%storage) {
-				push @draft, qq[{$content}];
+				push @draft, $content;
 				# TODO add code for table of contents
 			},
 			stop => sub { True; }
@@ -77,12 +77,21 @@ module Pod::Goes::HTML {
 	my @formatting =
 		sub (:$type where {$type ~~ 'L'}) { True; } => {
 			start => sub (:@draft, :@meta) { push @draft, qq[<a href="{@meta[0]}">]; },
+			in => sub (:@draft, :$content) { push @draft, $content; },
 			stop => sub (:@draft) {	push @draft, qq[</a>]; }
 		},
 		sub (:$type where {$type ~~ 'C'}) { True; } => {
 			start => sub (:@draft) { push @draft, qq[<code>]; },
 			in => sub (:@draft, :$content) { push @draft, $content; },
 			stop => sub (:@draft) { push @draft, q[</code>]; }
+		},
+		sub (:$type where {$type ~~ 'D'}) { True; } => {
+			start => sub (:@draft) { push @draft, qq[{$N}<dfn>]; },
+			in => sub (:@draft, :$content, :$instance) {
+				push @draft, qq[$content];
+				# TODO what should we do with synonyms in @meta ?
+			},
+			stop => sub (:@draft) { push @draft, qq[</dfn>]; };
 		};
 	my @heading =
 		sub { True; } => {
