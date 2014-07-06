@@ -87,11 +87,18 @@ module Pod::Goes::HTML {
 		},
 		sub (:$type where {$type ~~ 'D'}) { True; } => {
 			start => sub (:@draft) { push @draft, qq[{$N}<dfn>]; },
-			in => sub (:@draft, :$content, :$instance) {
-				push @draft, qq[$content];
+			in => sub (:@draft, :$content) {
+				push @draft, $content;
 				# TODO what should we do with synonyms in @meta ?
 			},
 			stop => sub (:@draft) { push @draft, qq[</dfn>]; };
+		},
+		sub (:$type where {$type ~~ 'I'}) { True; } => {
+			start => sub (:@draft) { push @draft, qq[{$N}<em>]; },
+			in => sub (:@draft, :$content) {
+				push @draft, $content;
+			},
+			stop => sub (:@draft) { push @draft, qq[</em>]; };
 		};
 	my @heading =
 		sub { True; } => {
