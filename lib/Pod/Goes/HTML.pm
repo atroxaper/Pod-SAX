@@ -76,8 +76,23 @@ module Pod::Goes::HTML {
 		};
 	my @formatting =
 		sub (:$type where {$type ~~ 'L'}) { True; } => {
-			start => sub (:@draft, :@meta) { push @draft, qq[<a href="{@meta[0]}">]; },
-			in => sub (:@draft, :$content) { push @draft, $content; },
+			start => sub (:@draft, :@meta, :$content) {
+			 	unless @meta {
+			 		if ($content ~~ Str) {
+			 			@meta = ($content);
+			 		} else {
+			 			@meta = ("#");
+			 		}
+			 	}
+				push @draft, qq[<a href="{@meta[0]}">];
+			},
+			in => sub (:@draft, :$content) {
+				my $cont = $content;
+				if $cont ~~ /^'#'/ {
+					$cont = $/.postmatch;
+				}
+				push @draft, $cont;
+			},
 			stop => sub (:@draft) {	push @draft, qq[</a>]; }
 		},
 		sub (:$type where {$type ~~ 'C'}) { True; } => {
