@@ -76,10 +76,11 @@ module Pod::Goes::HTML {
 		};
 	my @formatting =
 		sub (:$type where {$type ~~ 'L'}) { True; } => {
-			start => sub (:@draft, :@meta, :$content) {
+			start => sub (:@draft, :@meta, :$content, :$instance) {
+			say $instance.perl;
 			 	unless @meta {
-			 		if ($content ~~ Str) {
-			 			@meta = ($content);
+			 		if ($content ~~ Array) {
+			 			@meta = @($content)[0];
 			 		} else {
 			 			@meta = ("#");
 			 		}

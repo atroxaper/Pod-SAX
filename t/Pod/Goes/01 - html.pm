@@ -3,9 +3,9 @@ use v6;
 use Test;
 
 use Pod::Goes::HTML;
-use Pod::Nearby;
+use Pod::Style::Carder;
 
-plan 3;
+plan 7;
 
 sub rm-n($str) {
 	return $str.subst(/\n/, '', :g);
@@ -58,5 +58,21 @@ sub get-test-result(Str $source --> Str) {
 		q[<h1>Heading1</h1>] ~
 		q[<h2>Heading2</h2>] ~
 		q[<h1>Heading11</h1>], 'just headings';
+}
+
+{# links
+	my %links =
+		'L<http://www.mp3dev.org/mp3/>' => q[<a href="http://www.mp3dev.org/mp3/"]
+		'L<name|link>' => q[<a href="link">name</a>],
+		'L<#name>' => q[<a href="#name">name</a>],
+		'L<C<name>>' => q[<a href="#"><code>name<code></a>],
+		'L<name>' => q[<a href="name">name</a>];
+	my $pod-str = qq:to[END];
+		=para
+		content
+		END
+	for %links.kv -> $k, $v {
+		is get-test-result($pod-str.subst(/content/, $k)), '<p> ~ '$v ~ '</p>', 'link: ' ~ $k;
+	}
 }
 

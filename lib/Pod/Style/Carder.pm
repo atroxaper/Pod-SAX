@@ -1,4 +1,4 @@
-module Pod::Nearby {
+module Pod::Style::Carder {
 	sub get-pod(Str $source) is export {
 		EVAL $source ~ "\n\$=pod";
 	}
@@ -50,7 +50,7 @@ module Pod::Nearby {
 		method prepare(--> Bool) { ... }
 	}
 
-	class Nearer is export {
+	class Comb is export {
 		has %.callbacks is rw;
 		has @.allowable-pod-classes is rw = Pod::Block, Pod::Config;
 		has @.draft;

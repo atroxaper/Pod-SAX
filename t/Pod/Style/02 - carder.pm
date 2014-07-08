@@ -2,7 +2,7 @@ use v6;
 
 use Test;
 
-use Pod::Nearby;
+use Pod::Style::Carder;
 
 plan 28;
 
@@ -39,7 +39,7 @@ plan 28;
 	my $pod = get-pod($pod-string);
 	my $instance;
 	my $status;
-	lives_ok {$instance = Nearer.new}, 'create Nearer';
+	lives_ok {$instance = Comb.new}, 'create Comb';
 
 	my @para =
 		sub { True; } => {
@@ -96,11 +96,11 @@ plan 28;
 			in => sub (:@draft) {@draft.push('in of head'); True; }
 		};
 
-	my Nearer $nearer .= new();
-	$nearer.callbacks{Pod::Heading.^name} = @head-calls;
+	my Comb $comb .= new();
+	$comb.callbacks{Pod::Heading.^name} = @head-calls;
 
-	$nearer.approach-to($pod[0]);
-	is $nearer.draft.join('|'), 'start of head|stop of head', 'callback for start and stop of head';
+	$comb.approach-to($pod[0]);
+	is $comb.draft.join('|'), 'start of head|stop of head', 'callback for start and stop of head';
 }
 
 {#= history support test
@@ -114,7 +114,7 @@ plan 28;
 		END
 
 	my $pod = get-pod($pod-string);
-	my Nearer $nearer .= new();
+	my Comb $comb .= new();
 	my @heading =
 		sub { True; } => {
 			start => sub (:@draft, :$level) { push @draft, "<h$level>"; True; },
@@ -131,12 +131,12 @@ plan 28;
 		sub (:$type where {$type eq 'D'}) { True; } => {
 			in => sub (:@draft, :$content) { push @draft, 'D' ~ $content ~ 'D'; True; }
 		};
-	$nearer.callbacks{Pod::Heading.^name} = @heading;
-	$nearer.callbacks{Pod::Block::Para.^name} = @para;
-	$nearer.callbacks{Pod::FormattingCode.^name} = @format;
+	$comb.callbacks{Pod::Heading.^name} = @heading;
+	$comb.callbacks{Pod::Block::Para.^name} = @para;
+	$comb.callbacks{Pod::FormattingCode.^name} = @format;
 
-	$nearer.approach-to($pod);
-	is $nearer.draft.join('|'), '<h1>|big para 1|</h1>|2|D3D|4', "history works well";
+	$comb.approach-to($pod);
+	is $comb.draft.join('|'), '<h1>|big para 1|</h1>|2|D3D|4', "history works well";
 }
 
 {#= test storage and clear
@@ -150,21 +150,21 @@ plan 28;
 		END
 
     my $pod = get-pod($pod-string);
-    my Nearer $nearer .= new;
+    my Comb $comb .= new;
     my @para =
     	sub (:@history where {@history && @history[*-1] ~~ Pod::Block::Named && @history[*-1].name ~~ 'TITLE'}) { True; } => {
     		in => sub (:$content, :@draft, :%storage) { push @draft, $content; %storage{'TITLE'} = $content; True; }
     	};
-	$nearer.callbacks{Pod::Block::Para.^name} = @para;
-	$nearer.approach-to($pod);
-	is $nearer.draft.join, 'Synopsis 26 - Documentation', 'call for TITLE ok';
-	is $nearer.storage{'TITLE'}, 'Synopsis 26 - Documentation', 'storage works well';
+	$comb.callbacks{Pod::Block::Para.^name} = @para;
+	$comb.approach-to($pod);
+	is $comb.draft.join, 'Synopsis 26 - Documentation', 'call for TITLE ok';
+	is $comb.storage{'TITLE'}, 'Synopsis 26 - Documentation', 'storage works well';
 
-	$nearer.approach-to($pod);
-	isnt $nearer.draft.join, 'Synopsis 26 - Documentation', 'two calls in a row did different result';
-	$nearer.clear();
-	$nearer.approach-to($pod);
-	is $nearer.draft.join, 'Synopsis 26 - Documentation', 'two calls in a row with clear did the same result';
+	$comb.approach-to($pod);
+	isnt $comb.draft.join, 'Synopsis 26 - Documentation', 'two calls in a row did different result';
+	$comb.clear();
+	$comb.approach-to($pod);
+	is $comb.draft.join, 'Synopsis 26 - Documentation', 'two calls in a row with clear did the same result';
 }
 
 {#= test state
@@ -178,7 +178,7 @@ plan 28;
 		END
 
 	my $pod = get-pod($pod-string);
-	my Nearer $nearer .= new;
+	my Comb $comb .= new;
 	my @para =
 		sub { True; } => {
 			start => sub (:%state) { %state<foo> = 'bar'; True; },
@@ -190,10 +190,10 @@ plan 28;
 			start => sub (:%state) { %state<foo> = 'foobar'; True; },
 			stop => sub (:@draft, :%state) { push @draft, %state<foo>; True; }
 		};
-	$nearer.callbacks{Pod::Block::Para.^name} = @para;
-	$nearer.callbacks{Pod::Block::Named.^name} = @named;
-	$nearer.approach-to($pod);
-	is $nearer.draft.join('|'), 'Synopsis 26 - Documentation|bar|foobar', 'state works well';
+	$comb.callbacks{Pod::Block::Para.^name} = @para;
+	$comb.callbacks{Pod::Block::Named.^name} = @named;
+	$comb.approach-to($pod);
+	is $comb.draft.join('|'), 'Synopsis 26 - Documentation|bar|foobar', 'state works well';
 }
 
 {#= test SimpeleAnchor
@@ -222,7 +222,7 @@ plan 28;
 		=end pod
 		END
 	my $pod = get-pod($pod-string);
-	my Nearer $nearer .= new;
+	my Comb $comb .= new;
 	my @para =
 		sub { True; } => {
 			start => sub (:@draft) { push @draft, SimpleAnchor.new(:template('<p><%=para1%></p>'), :priority(0)); True; },
@@ -235,10 +235,10 @@ plan 28;
 			stop => sub (:%storage) { %storage<para1> = 'p1'; %storage<para2> = 'p2';
 				%storage<para3> = 'p3'; %storage<TITLE> = 'title'; %storage<foo> = 'bar'; }
 		};
-	$nearer.callbacks{Pod::Block::Para.^name} = @para;
-	$nearer.callbacks{Pod::Block::Named.^name} = @named;
-	$nearer.approach-to($pod);
-	is $nearer.get-result, '<title>title</title><p>p1</p><p>p2</p><p>p3</p>',
+	$comb.callbacks{Pod::Block::Para.^name} = @para;
+	$comb.callbacks{Pod::Block::Named.^name} = @named;
+	$comb.approach-to($pod);
+	is $comb.get-result, '<title>title</title><p>p1</p><p>p2</p><p>p3</p>',
 		'result and anchors calling without priority works well';
 }
 
@@ -252,7 +252,7 @@ plan 28;
 		=end pod
 		END
 	my $pod = get-pod($pod-string);
-	my Nearer $nearer .= new;
+	my Comb $comb .= new;
 	my @para =
 		sub (:@history where {@history.&under-name('TITLE')}) { True; } => {
 			start => sub (:@draft) { push @draft, 'under title'; True; }
@@ -261,9 +261,9 @@ plan 28;
 		sub (:@history where {@history.&under-type(Pod::Block::Named)}) { True; } => {
 			start => sub (:@draft) { push @draft, 'under named'; True; }
 		};
-	$nearer.callbacks{Pod::Block::Para.^name} = @para;
-	$nearer.callbacks{Pod::Block::Named.^name} = @named;
+	$comb.callbacks{Pod::Block::Para.^name} = @para;
+	$comb.callbacks{Pod::Block::Named.^name} = @named;
 
-	$nearer.approach-to($pod);
-	is $nearer.draft.join('|'), 'under named|under title', "selector's helpers works well"
+	$comb.approach-to($pod);
+	is $comb.draft.join('|'), 'under named|under title', "selector's helpers works well"
 }

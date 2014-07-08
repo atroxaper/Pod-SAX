@@ -3,7 +3,7 @@ use v6;
 use Test;
 
 use Pod::Goes::HTML;
-use Pod::Nearby;
+use Pod::Style::Carder;
 
 plan 1;
 
