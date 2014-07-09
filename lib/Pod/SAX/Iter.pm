@@ -1,14 +1,14 @@
-module Pod::Style::Iter {
+module Pod::SAX::Iter {
 
 	our sub has-content($obj) {
 		return $obj.^attributes.grep({.has_accessor && .name eq '@!content'});
 	}
 
-	class Start {
+	our class Start {
 		has @.content;
 	}
 
-	class Iterator is export {
+	class PodIterator is export {
 		has $!current;	# pair of pod object and next index of its content
 		has @!parent;	# array of currents
 		has $!index;	# index of next element in @content

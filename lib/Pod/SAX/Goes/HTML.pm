@@ -1,5 +1,7 @@
-module Pod::Goes::HTML {
-	use Pod::Nearby;
+module Pod::SAX::Goes::HTML {
+	use Pod::SAX::Reformer;
+	use Pod::SAX::Anchors;
+	use Pod::SAX::Common;
 
 	my $N = "\n";
 
@@ -122,15 +124,15 @@ module Pod::Goes::HTML {
 			stop => sub (:@draft, :$level) { push @draft, qq[</h{$level}>]; }
 		};
 
-	sub make-nearer() is export {
-		my Nearer $nearer .= new;
-		$nearer.callbacks{Pod::Block::Comment.^name} = @comment;
-		$nearer.callbacks{Pod::Block::Named.^name} = @named;
-		$nearer.callbacks{Pod::Block::Para.^name} = @para;
-		$nearer.callbacks{Pod::Block::Table.^name} = @table;
-		$nearer.callbacks{Pod::FormattingCode.^name} = @formatting;
-		$nearer.callbacks{Pod::Heading.^name} = @heading;
+	sub make-reformer() is export {
+		my Reformer $reformer .= new;
+		$reformer.callbacks{Pod::Block::Comment.^name} = @comment;
+		$reformer.callbacks{Pod::Block::Named.^name} = @named;
+		$reformer.callbacks{Pod::Block::Para.^name} = @para;
+		$reformer.callbacks{Pod::Block::Table.^name} = @table;
+		$reformer.callbacks{Pod::FormattingCode.^name} = @formatting;
+		$reformer.callbacks{Pod::Heading.^name} = @heading;
 
-		return $nearer;
+		return $reformer;
 	}
 }

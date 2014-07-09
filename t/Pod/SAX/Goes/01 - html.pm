@@ -2,20 +2,21 @@ use v6;
 
 use Test;
 
-use Pod::Goes::HTML;
-use Pod::Style::Carder;
+use Pod::SAX::Goes::HTML;
+use Pod::SAX::Reformer;
+use Pod::SAX::Common;
 
-plan 7;
+plan 8;
 
 sub rm-n($str) {
 	return $str.subst(/\n/, '', :g);
 }
 
 sub get-test-result(Str $source --> Str) {
-	my Nearer $nearer = make-nearer;
+	my Reformer $reformer = make-reformer;
 	my $pod = get-pod($source);
-	$nearer.approach-to($pod);
-	return $nearer.get-result.&rm-n;
+	$reformer.reform($pod);
+	return $reformer.get-result.&rm-n;
 }
 
 {# start and end of HTML file
@@ -62,7 +63,7 @@ sub get-test-result(Str $source --> Str) {
 
 {# links
 	my %links =
-		'L<http://www.mp3dev.org/mp3/>' => q[<a href="http://www.mp3dev.org/mp3/"]
+		'L<http://www.mp3dev.org/mp3/>' => q[<a href="http://www.mp3dev.org/mp3/"],
 		'L<name|link>' => q[<a href="link">name</a>],
 		'L<#name>' => q[<a href="#name">name</a>],
 		'L<C<name>>' => q[<a href="#"><code>name<code></a>],
@@ -72,7 +73,7 @@ sub get-test-result(Str $source --> Str) {
 		content
 		END
 	for %links.kv -> $k, $v {
-		is get-test-result($pod-str.subst(/content/, $k)), '<p> ~ '$v ~ '</p>', 'link: ' ~ $k;
+		is get-test-result($pod-str.subst(/content/, $k)), '<p>' ~ $v ~ '</p>', 'link: ' ~ $k;
 	}
 }
 

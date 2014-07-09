@@ -1,18 +1,18 @@
 use v6;
 
 use Test;
-use Pod::Nearby;
+use Pod::SAX::Common;
 
-use Pod::Style::Iter;
+use Pod::SAX::Iter;
 
 plan 7;
 
-my Pod::Style::Iter::Start $start .= new(:content('cont'));
+my Pod::SAX::Iter::Start $start .= new(:content('cont'));
 is +$start.content, 1, "Start's content has one element";
 is $start.content[0], 'cont', "Start's content has good element";
 
-ok Pod::Style::Iter::has-content($start), "Start has content";
-nok Pod::Style::Iter::has-content("String"), "String doesn't have content";
+ok Pod::SAX::Iter::has-content($start), "Start has content";
+nok Pod::SAX::Iter::has-content("String"), "String doesn't have content";
 
 my $pod-string = qq:to[END];
 	=begin pod
@@ -23,7 +23,7 @@ my $pod-string = qq:to[END];
 	=end pod
 	END
 my $pod = get-pod($pod-string);
-my Iterator $iter .= new();
+my PodIterator $iter .= new();
 $iter.init($pod);
 my (@pair, @delta, @contents, @items) = ();
 while (@pair = $iter.get-next).elems > 1 {
