@@ -11,4 +11,21 @@ module Pod::SAX::Common {
 	sub under-type(@history, $type --> Bool) is export {
 		return so @history && @history[*-1] ~~ $type;
 	}
+
+	grammar MetaL is export {
+		token TOP {
+			<scheme>?
+			<extern>?
+			<intern>?
+		}
+		token scheme {
+			^^ $<type>=['http'|'https'|'file'|'mailto'|'man'|'doc'|'defn'|'issn'|'isbn'] ':'
+		}
+		token extern {
+			$<from-root>=['//']? $<path>=<-['#']>+
+		}
+		token intern {
+			'#' .+
+		}
+	}
 }

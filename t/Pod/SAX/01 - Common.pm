@@ -5,7 +5,7 @@ use Pod::SAX::Reformer;
 
 use Pod::SAX::Common;
 
-plan 4;
+plan 18;
 
 {#= simple test of parsing a string to Pod
 	my $pod-string = qq:to[END];
@@ -50,4 +50,28 @@ plan 4;
 
 	$reformer.reform($pod);
 	is $reformer.draft.join('|'), 'under named|under title', "selector's helpers works well"
+}
+
+{#| grammar MetaL test
+	my $match = MetaL.parse('http://google.com#boom');
+	is $match<scheme><type>, 'http', 'scheme found';
+	ok $match<extern><from-root>, 'from root';
+	is $match<extern><path>, 'google.com', 'path found';
+	is $match<intern>, '#boom', 'intern found';
+
+	$match = MetaL.parse('doc:perldata');
+	is $match<scheme><type>, 'doc', 'scheme doc';
+	is $match<extern><path>, 'perldata', 'path perldata';
+	nok $match<extern><from-root>.elems, 'without root';
+	nok $match<intern>, 'without intern';
+
+	$match = MetaL.parse('#doc');
+	is $match<intern>, '#doc', 'only intern';
+	nok $match<extern>, 'without extern';
+	nok $match<scheme>, 'without scheme';
+
+	$match = MetaL.parse('link');
+	is $match<extern>, 'link', 'only extern';
+	nok $match<scheme>, 'without scheme';
+	nok $match<intern>, 'without intern';
 }
