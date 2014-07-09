@@ -89,3 +89,23 @@ sub get-test-result(Str $source --> Str) {
 	}
 }
 
+{#| D<> and L<defn:>
+	my $pod-str = qq:to[END];
+		=begin para
+
+		D<term-one|termone;term_one;term1;term-1;term_1>
+		L<defn:term-one>
+		L<term-one(click)|defn:term_one>
+		L<defn:term-1>
+		L<defn:1-term>
+
+		=end para
+		END
+	is get-test-result($pod-str),
+		q[<p><dfn id="_defn_term-one">term-one</dfn>] ~
+		q[<a href="#_defn_term-one">defn:term-one</a>] ~
+		q[<a href="#_defn_term-one">defn:term-one(click)</a>] ~
+		q[<a href="#_defn_term-one">defn:term-1</a>] ~
+		q[<a href="#_defn_1-term">defn:1-term</a></p>], 'link to defn';
+}
+
