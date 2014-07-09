@@ -6,7 +6,7 @@ use Pod::SAX::Goes::HTML;
 use Pod::SAX::Reformer;
 use Pod::SAX::Common;
 
-plan 8;
+plan 20;
 
 sub rm-n($str) {
 	return $str.subst(/\n/, '', :g);
@@ -63,10 +63,22 @@ sub get-test-result(Str $source --> Str) {
 
 {# links
 	my %links =
-		'L<http://www.mp3dev.org/mp3/>' => q[<a href="http://www.mp3dev.org/mp3/"],
+		'L<http://www.mp3dev.org/mp3/>' => q[<a href="http://www.mp3dev.org/mp3/">http://www.mp3dev.org/mp3/</a>],
+		'L<http://perlcabal.org/syn/S04.html#The_for_statement>' => q[<a href="http://perlcabal.org/syn/S04.html#The_for_statement">http://perlcabal.org/syn/S04.html#The_for_statement</a>],
+		'L<http:tutorial/faq.html>' => q[<a href="tutorial/faq.html">http:tutorial/faq.html</a>],
+		'L<file:/usr/local/lib/.configrc>' => q[<a href="file:/usr/local/lib/.configrc">file:/usr/local/lib/.configrc</a>],
+		'L<file:.configrc>' => q[<a href="file:.configrc">file:.configrc</a>],
+		'L<mailto:devnull@rt.cpan.org>' => q[<a href="mailto:devnull@rt.cpan.org">mailto:devnull@rt.cpan.org</a>],
+		'L<man:find(1)>' => q[<a href="man:find(1)">man:find(1)</a>],
+		'L<doc:perldata>' => q[<a href="doc:perldata">doc:perldata</a>],
+		'L<doc:#Special Features>' => q[<a href="#Special Features">doc:#Special Features</a>],
+		'L<#Special Features>' => q[<a href="#Special Features">#Special Features</a>],
+		'L<defn:lexiphania>' => q[<a href="#_defn_lexiphania">defn:lexiphania</a>],
+		'L<issn:1087-903X>' => q[<a href="issn:1087-903X">issn:1087-903X</a>],
+		'L<isbn:2-266-11156-6>' => q[<a href="isbn:2-266-11156-6">isbn:2-266-11156-6</a>],
 		'L<name|link>' => q[<a href="link">name</a>],
-		'L<#name>' => q[<a href="#name">name</a>],
-		'L<C<name>>' => q[<a href="#"><code>name<code></a>],
+		'L<C<name>>' => q[<a href="name"><code>name</code></a>],
+		'L<C<n>amC<e>>' => q[<a href="name"><code>n</code>am<code>e</code></a>],
 		'L<name>' => q[<a href="name">name</a>];
 	my $pod-str = qq:to[END];
 		=para

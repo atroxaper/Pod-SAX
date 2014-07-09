@@ -14,6 +14,8 @@ module Pod::SAX::Iter {
 		has $!index;	# index of next element in @content
 		has Bool $!stop;
 
+		# TODO make a special .new method to call init method inside
+
 		method get-next(--> Parcel) {
 			return (Nil, 0) if $!stop;
 			if ($!index >= +$!current.content) {

@@ -55,14 +55,14 @@ plan 18;
 {#| grammar MetaL test
 	my $match = MetaL.parse('http://google.com#boom');
 	is $match<scheme><type>, 'http', 'scheme found';
-	ok $match<extern><from-root>, 'from root';
+	ok $match<extern><from-root>.from != $match<extern><from-root>.to, 'from root';
 	is $match<extern><path>, 'google.com', 'path found';
 	is $match<intern>, '#boom', 'intern found';
 
 	$match = MetaL.parse('doc:perldata');
 	is $match<scheme><type>, 'doc', 'scheme doc';
 	is $match<extern><path>, 'perldata', 'path perldata';
-	nok $match<extern><from-root>.elems, 'without root';
+	nok $match<extern><from-root>.from != $match<extern><from-root>.to, 'without root';
 	nok $match<intern>, 'without intern';
 
 	$match = MetaL.parse('#doc');

@@ -2,6 +2,7 @@ module Pod::SAX::Goes::HTML {
 	use Pod::SAX::Reformer;
 	use Pod::SAX::Anchors;
 	use Pod::SAX::Common;
+	use Pod::SAX::Iter;
 
 	my $N = "\n";
 
@@ -79,22 +80,38 @@ module Pod::SAX::Goes::HTML {
 	my @formatting =
 		sub (:$type where {$type ~~ 'L'}) { True; } => {
 			start => sub (:@draft, :@meta, :$content, :$instance) {
-			say $instance.perl;
-			 	unless @meta {
-			 		if ($content ~~ Array) {
-			 			@meta = @($content)[0];
-			 		} else {
-			 			@meta = ("#");
+				my $good-meta;
+				if @meta {
+					$good-meta = @meta[0];
+				} else { # if meta is't declared than we get bare content
+			 		my PodIterator $iter .= new;
+			 		$iter.init($instance);
+			 		my @pair;
+			 		my @for-good-meta;
+			 		while (@pair = $iter.get-next).elems > 1 {
+			 			@for-good-meta.push(@pair[0]) if @pair[1] == 0;
 			 		}
+			 		$good-meta = @for-good-meta.join;
 			 	}
-				push @draft, qq[<a href="{@meta[0]}">];
+			 	# parse scheme
+			 	# maybe it would better to write special Action for that
+			 	my $m = MetaL.parse($good-meta);
+			 	if ($m<scheme> && $m<scheme><type> eq 'doc' && $m<intern>) {
+			 		$good-meta = $m<intern>;
+			 	} elsif ($m<scheme> && $m<scheme><type> eq 'defn') {
+			 		$good-meta = '#_defn_';
+			 		$good-meta ~= $m<extern> if $m<extern>;
+			 		$good-meta ~= $m<intern> if $m<intern>;
+			 	} elsif ($m<scheme> && $m<scheme><type> ~~ any('http', 'https')
+			 			&& $m<extern> && $m<extern><from-root>.from == $m<extern><from-root>.to) {
+			 		$good-meta = $m<extern><path>;
+			 		$good-meta ~= $m<intern> if $m<intern>;
+			 	}
+
+				push @draft, qq[<a href="$good-meta">];
 			},
 			in => sub (:@draft, :$content) {
-				my $cont = $content;
-				if $cont ~~ /^'#'/ {
-					$cont = $/.postmatch;
-				}
-				push @draft, $cont;
+				push @draft, $content;
 			},
 			stop => sub (:@draft) {	push @draft, qq[</a>]; }
 		},
