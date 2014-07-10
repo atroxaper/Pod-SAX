@@ -14,6 +14,6 @@ ok $reformer, 'make caller works well';
 my $pod = get-pod slurp('../../../../in.txt'.path);
 $reformer.reform($pod);
 say "draft is:\n{$reformer.get-result}\n" ~ '-' x 30;
-my $out = open 'html-out.html', :w;
+my $out = open '../../../../index.html', :w;
 $out.say($reformer.get-result);
 $out.close();
