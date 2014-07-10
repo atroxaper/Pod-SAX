@@ -169,7 +169,7 @@ module Pod::SAX::Goes::HTML {
 		return $reformer;
 	}
 
-	# TODO add reference to Pod::To::HTML
+	# I stole that sub from L<Pod::To::HTML module|https://github.com/perl6/Pod-To-HTML>
 	sub escape_html(Str $str) returns Str {
         return $str unless $str ~~ /<[&<>"']>/;
 
