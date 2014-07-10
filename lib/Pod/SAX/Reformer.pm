@@ -58,7 +58,7 @@ class Reformer {
 	method !get-satisfy($pod-name, %args) {
 		my @result = ();
 		for self.callbacks{$pod-name}.list.map({.key, .value}) -> $selector, $functions {
-			my %need-args = self.filter-args($selector, %args);
+			my %need-args = filter-args($selector, %args);
 			if ((%need-args ~~ $selector.signature) && ($selector(|%need-args))) {
 				@result.push($functions);
 			}
