@@ -43,10 +43,10 @@ module Pod::SAX::Anchors {
 		has Bool $.prepared is rw = False;
 		has Int $.priority = 0;
 		has $!result = '';
-		has &.callback;
-		has %.storage;
-		has %.draft;
-		has %.custom;
+		has &.callback is rw;
+		has %.storage is rw;
+		has @.draft is rw;
+		has %.custom is rw;
 
 		multi method gist() {
 			return $!result;

@@ -6,7 +6,7 @@ use Pod::SAX::Goes::HTML;
 use Pod::SAX::Reformer;
 use Pod::SAX::Common;
 
-plan 20;
+plan 21;
 
 sub rm-n($str) {
 	return $str.subst(/\n/, '', :g);
@@ -103,9 +103,9 @@ sub get-test-result(Str $source --> Str) {
 		END
 	is get-test-result($pod-str),
 		q[<p><dfn id="_defn_term-one">term-one</dfn>] ~
-		q[<a href="#_defn_term-one">defn:term-one</a>] ~
-		q[<a href="#_defn_term-one">defn:term-one(click)</a>] ~
-		q[<a href="#_defn_term-one">defn:term-1</a>] ~
-		q[<a href="#_defn_1-term">defn:1-term</a></p>], 'link to defn';
+		q[ <a href="#_defn_term-one">defn:term-one</a>] ~
+		q[ <a href="#_defn_term-one">term-one(click)</a>] ~
+		q[ <a href="#_defn_term-one">defn:term-1</a>] ~
+		q[ <a href="#_defn_1-term">defn:1-term</a></p>], 'link to defn';
 }
 

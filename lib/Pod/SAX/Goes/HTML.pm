@@ -50,7 +50,7 @@ module Pod::SAX::Goes::HTML {
 		sub { True; } => {
 			start => sub (:@draft) { push @draft, "<p>"; },
 			in => sub (:@draft, :$content) { push @draft, $content; },
-			stop => sub (:@draft) { push @draft, "</p>"; }
+			stop => sub (:@draft) { push @draft, "</p>{$N}"; }
 		};
 	my @table =
 		sub { True; } => {
@@ -99,16 +99,19 @@ module Pod::SAX::Goes::HTML {
 			 	if ($m<scheme> && $m<scheme><type> eq 'doc' && $m<intern>) {
 			 		$good-meta = $m<intern>;
 			 	} elsif ($m<scheme> && $m<scheme><type> eq 'defn') {
-			 		$good-meta = '#_defn_';
-			 		$good-meta ~= $m<extern> if $m<extern>;
-			 		$good-meta ~= $m<intern> if $m<intern>;
+			 		sub test(:%storage, :%custom) {
+						my $search = %custom<search>;
+						my $found = %storage{$search} || '_defn_' ~ $search;
+						return True, '#' ~ $found;
+					}
+					$good-meta = CallbackAnchor.new(:callback(&test), :custom({search => $m<extern>}));
 			 	} elsif ($m<scheme> && $m<scheme><type> ~~ any('http', 'https')
 			 			&& $m<extern> && $m<extern><from-root>.from == $m<extern><from-root>.to) {
 			 		$good-meta = $m<extern><path>;
 			 		$good-meta ~= $m<intern> if $m<intern>;
 			 	}
 
-				push @draft, qq[<a href="$good-meta">];
+				push @draft, q[<a href="], $good-meta, q[">];
 			},
 			in => sub (:@draft, :$content) {
 				push @draft, $content;
@@ -116,15 +119,18 @@ module Pod::SAX::Goes::HTML {
 			stop => sub (:@draft) {	push @draft, qq[</a>]; }
 		},
 		sub (:$type where {$type ~~ 'C'}) { True; } => {
-			start => sub (:@draft) { push @draft, qq[<code>]; },
+			start => sub (:@draft) { push @draft, q[<code>]; },
 			in => sub (:@draft, :$content) { push @draft, $content; },
 			stop => sub (:@draft) { push @draft, q[</code>]; }
 		},
 		sub (:$type where {$type ~~ 'D'}) { True; } => {
-			start => sub (:@draft) { push @draft, qq[{$N}<dfn>]; },
-			in => sub (:@draft, :$content) {
+			start => sub (:@draft) { push @draft, qq[{$N}<dfn id="]; },
+			in => sub (:@draft, :$content, :%storage, :@meta) {
+				my $id = '_defn_' ~ $content;
+				push @draft, qq[{$id}">];
 				push @draft, $content;
-				# TODO what should we do with synonyms in @meta ?
+				%storage{$content} = $id;
+				%storage{$_} = $id for @meta;
 			},
 			stop => sub (:@draft) { push @draft, qq[</dfn>]; };
 		},
