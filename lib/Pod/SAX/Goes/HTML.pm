@@ -132,19 +132,28 @@ module Pod::SAX::Goes::HTML {
 				%storage{$content} = $id;
 				%storage{$_} = $id for @meta;
 			},
-			stop => sub (:@draft) { push @draft, qq[</dfn>]; };
+			stop => sub (:@draft) { push @draft, qq[</dfn>]; }
 		},
 		sub (:$type where {$type ~~ 'I'}) { True; } => {
 			start => sub (:@draft) { push @draft, qq[{$N}<em>]; },
-			in => sub (:@draft, :$content) {
-				push @draft, $content;
-			},
-			stop => sub (:@draft) { push @draft, qq[</em>]; };
+			in => sub (:@draft, :$content) { push @draft, $content; },
+			stop => sub (:@draft) { push @draft, qq[</em>]; }
+		},
+		sub (:$type where {$type ~~ 'B'}) { True; } => {
+			start => sub (:@draft) { push @draft, q[<strong>]},
+			in => sub (:@draft, :$content) { push @draft, $content; },
+			stop => sub (:@draft) { push @draft, q[</strong>]}
 		};
 	my @heading =
 		sub { True; } => {
 			start => sub (:@draft, :$level) { push @draft, qq[<h{$level}>]; },
 			stop => sub (:@draft, :$level) { push @draft, qq[</h{$level}>]; }
+		};
+	my @code =
+		sub { True; } => {
+			start => sub (:@draft) { push @draft, qq[<pre>]; },
+			in => sub (:@draft, :$content) { push @draft, $content; },
+			stop => sub (:@draft) { push @draft, qq[</pre>]; }
 		};
 
 	sub make-reformer() is export {
@@ -155,6 +164,7 @@ module Pod::SAX::Goes::HTML {
 		$reformer.callbacks{Pod::Block::Table.^name} = @table;
 		$reformer.callbacks{Pod::FormattingCode.^name} = @formatting;
 		$reformer.callbacks{Pod::Heading.^name} = @heading;
+		$reformer.callbacks{Pod::Block::Code.^name} = @code;
 
 		return $reformer;
 	}

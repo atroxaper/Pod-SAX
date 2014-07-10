@@ -6,7 +6,7 @@ use Pod::SAX::Goes::HTML;
 use Pod::SAX::Reformer;
 use Pod::SAX::Common;
 
-plan 21;
+plan 23;
 
 sub rm-n($str) {
 	return $str.subst(/\n/, '', :g);
@@ -107,5 +107,38 @@ sub get-test-result(Str $source --> Str) {
 		q[ <a href="#_defn_term-one">term-one(click)</a>] ~
 		q[ <a href="#_defn_term-one">defn:term-1</a>] ~
 		q[ <a href="#_defn_1-term">defn:1-term</a></p>], 'link to defn';
+}
+
+{#| test Pod::Block::Code (=begin code)
+	my $pod-str = q:to[END];
+		=begin code :allow<B>
+			B<=begin pod>
+
+			=head1 A heading
+
+			This is Pod too. Specifically, this is a simple C<para> block
+
+				$this = pod('also');  # Specifically, a code block
+
+			B<=end pod>
+		=end code
+		END
+	is get-test-result($pod-str),
+		q[<pre>	<strong>=begin pod</strong>] ~
+		q[	=head1 A heading] ~
+		q[	This is Pod too. Specifically, this is a simple C<para> block] ~
+		q[		$this = pod('also');  # Specifically, a code block] ~
+		q[	<strong>=end pod</strong></pre>], '=begin code reforms well';
+}
+
+{#| test B<> and I<>
+	my $pod-str = qq:to[END];
+		=begin para
+		Text B<bold> and I<italic> and B<I<both>> and I<B<in back order>>
+		=end para
+		END
+    is get-test-result($pod-str),
+		q[<p>Text <strong>bold</strong> and <em>italic</em> and ] ~
+		q[<strong><em>both</em></strong> and <em><strong>in back order</strong></em></p>], 'B<> and I<> work well';
 }
 
