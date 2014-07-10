@@ -152,7 +152,7 @@ module Pod::SAX::Goes::HTML {
 	my @code =
 		sub { True; } => {
 			start => sub (:@draft) { push @draft, qq[<pre>]; },
-			in => sub (:@draft, :$content) { push @draft, $content; },
+			in => sub (:@draft, :$content) { push @draft, escape_html($content); },
 			stop => sub (:@draft) { push @draft, qq[</pre>]; }
 		};
 
@@ -168,4 +168,12 @@ module Pod::SAX::Goes::HTML {
 
 		return $reformer;
 	}
+
+	# TODO add reference to Pod::To::HTML
+	sub escape_html(Str $str) returns Str {
+        return $str unless $str ~~ /<[&<>"']>/;
+
+        $str.trans( [ q{&},     q{<},    q{>},    q{"},      q{'}     ] =>
+                    [ q{&amp;}, q{&lt;}, q{&gt;}, q{&quot;}, q{&#39;} ] );
+    }
 }

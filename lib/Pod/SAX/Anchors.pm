@@ -27,6 +27,7 @@ module Pod::SAX::Anchors {
 
 		method prepare() {
 			my $this = self;
+			# TODO and reference to tagzik repo
 			self.template ~~ m:g/ '<%' ['=']? $<key>=[ [ <!before '%>' > . ]* ] '%>' { unless $this.storage{$<key>.Str} {
 				$this.prepared = False;
 				return $this.prepared;

@@ -126,8 +126,8 @@ sub get-test-result(Str $source --> Str) {
 	is get-test-result($pod-str),
 		q[<pre>	<strong>=begin pod</strong>] ~
 		q[	=head1 A heading] ~
-		q[	This is Pod too. Specifically, this is a simple C<para> block] ~
-		q[		$this = pod('also');  # Specifically, a code block] ~
+		q[	This is Pod too. Specifically, this is a simple C&lt;para&gt; block] ~
+		q[		$this = pod(&#39;also&#39;);  # Specifically, a code block] ~
 		q[	<strong>=end pod</strong></pre>], '=begin code reforms well';
 }
 
