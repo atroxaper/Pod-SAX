@@ -1,4 +1,6 @@
 module Pod::SAX::Anchors {
+	use Pod::SAX::Common;
+
 	role Anchor is export {
 		method prepared(--> Bool) { ... }
 		method priority(--> Int) { ... }
@@ -32,6 +34,37 @@ module Pod::SAX::Anchors {
 			$!result = $.template;
 			$!result ~~ s:g/ '<%' ['=']? $<key>=[ [ <!before '%>' > . ]* ] '%>' /%.storage{$<key>.Str}/;
 			$.prepared = True;
+			return $.prepared;
+		}
+	}
+
+	class CallbackAnchor does Anchor is export {
+		# for role satisfaction  #
+		has Bool $.prepared is rw = False;
+		has Int $.priority = 0;
+		has $!result = '';
+		has &.callback;
+		has %.storage;
+		has %.draft;
+		has %.custom;
+
+		multi method gist() {
+			return $!result;
+		}
+
+		multi method Str() {
+			return $!result;
+		}
+
+		method prepare() {
+			my &func = &.callback;
+			my %args = { storage => %.storage, draft => @.draft, custom => %.custom };
+			%args = filter-args(&func, %args);
+			my @res = &func(|%args);
+			if @res[0] == True {
+				$.prepared = True;
+				$!result = @res[1];
+			}
 			return $.prepared;
 		}
 	}

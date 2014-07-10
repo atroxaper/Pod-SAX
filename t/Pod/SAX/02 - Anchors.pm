@@ -21,3 +21,18 @@ plan 6;
 	ok $anchor.storage, 'anchor storage is defined now';
 	is_deeply $anchor.storage, {a => 42, b => 43}, 'init-anchor works well';
 }
+
+{#| test CallbackAnchor
+	sub test(:%storage, :%custom) {
+		my $search = %custom<search>;
+		my $found = %storage{$search};
+		if ($found) {
+			return True, $found;
+		}
+		return False, '';
+	}
+	my CallbackAnchor $anchor .= new(:callback(&test), :custom({search => 'foo'}), :storage({foo => 'bar'}));
+	nok $anchor.prepared, "anchor isn't prepared";
+	ok $anchor.prepare, 'anchor prepared';
+	is $anchor, 'bar', 'anchor works well';
+}

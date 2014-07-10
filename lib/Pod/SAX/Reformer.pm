@@ -48,7 +48,7 @@ class Reformer {
 
 	method !call(@need-to-call, $type where any('start', 'stop', 'in'), %attrs) {
 		for @need-to-call.grep({? $_{$type}}).map({$_{$type}}) -> $sub {
-			my %args = self.filter-args($sub, %attrs);
+			my %args = filter-args($sub, %attrs);
 			if %args ~~ $sub.signature {
 				return if $sub(|%args);
 			}
@@ -91,15 +91,6 @@ class Reformer {
 				my $name-str = $_.name.substr(2);
 				%result{$name-str} = $obj."$name-str"();
 			}
-		}
-		return %result;
-	}
-
-	method filter-args($sub,  %args) {
-		my @param-names = $sub.signature.params.map: *.name.substr(1);
-		my %result;
-		for %args.keys -> $key {
-			%result{$key} = %args{$key} if $key eq any(@param-names);
 		}
 		return %result;
 	}
