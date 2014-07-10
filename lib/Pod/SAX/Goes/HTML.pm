@@ -55,7 +55,6 @@ module Pod::SAX::Goes::HTML {
 	my @table =
 		sub { True; } => {
 			start => sub (:$caption, :@headers, :@draft) {
-				return True if @headers && @headers.size > 0;
 				push @draft, qq[<table>{$N}];
 				# render headers #
 				if (@headers && +@headers > 0) {

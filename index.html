@@ -59,6 +59,81 @@ blocks">
         $this = pod(&#39;also&#39;);  # Specifically, a code block
 
     <strong>=end pod</strong>
-</pre></body>
+</pre><h3>Delimited blocks</h3><p>Delimited blocks are bounded by <code>=begin</code> and <code>=end</code> markers, both of which are followed by a valid Perl 6 identifier, which is the 
+<dfn id="_defn_typename">typename</dfn> of the block. Typenames that are entirely lowercase (for example: <code>=begin head1</code>) or entirely uppercase (for example: <code>=begin SYNOPSIS</code>) are reserved.</p>
+<p>After the typename, the rest of the <code>=begin</code> marker line is treated as configuration information for the block. This information is used in different ways by different types of blocks, but is always specified using Perl6-ish option pairs. That is, any of:</p>
+<table>
+<thead>
+<tr>
+<th>Value is...</th>
+<th>Specify with...</th>
+<th>Or with...</th>
+<th>Or with...</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boolean (true)</td>
+<td>C«:key»</td>
+<td>C«:key(1)»</td>
+<td>C«key => 1»</td>
+</tr>
+<tr>
+<td>Boolean (false)</td>
+<td>C«:!key»</td>
+<td>C«:key(0)»</td>
+<td>C«key => 0»</td>
+</tr>
+<tr>
+<td>String</td>
+<td>C«:key<str>»</td>
+<td>C«:key('str')»</td>
+<td>C«key => 'str'»</td>
+</tr>
+<tr>
+<td>List</td>
+<td>C«:key<1 2 3>»</td>
+<td>C«:key[1,2,3]»</td>
+<td>C«key => [1,2,3]»</td>
+</tr>
+<tr>
+<td>Hash</td>
+<td>C«:key{a=>1, b=>2}»</td>
+<td></td>
+<td>C«key => {a=>1, b=>2}»</td>
+</tr>
+</tbody>
+</table>
+<p>All option keys and values must, of course, be constants since Pod is a specification language, not a programming language. Specifically, option values cannot be closures. See Synopsis 2 for details of the various Perl 6 pair notations.</p>
+<p>The configuration section may be extended over subsequent lines by starting those lines with an <code>=</code> in the first (virtual) column followed by a whitespace character.</p>
+<p>The lines following the opening delimiter and configuration are the data or contents of the block, which continue until the block's matching <code>=end</code> marker line. For most block types, these contents may be indented if you wish, without them being treated as <a href="#Code
+blocks">code blocks</a>. Unlike Perl 5, indented text is only treated as code within <code>=pod</code>, <a href="#Nesting blocks"><code>=nested</code></a>, <a href="#Lists"><code>=item</code></a>, <code>=code</code>, and <a href="#Semantic blocks">semantic</a> blocks.</p>
+<p>The general syntax is:</p>
+<pre>     =begin <var>BLOCK_TYPE</var>  <var>OPTIONAL CONFIG INFO</var>
+     =                  <var>OPTIONAL EXTRA CONFIG INFO</var>
+     <var>BLOCK CONTENTS</var>
+     =end <var>BLOCK_TYPE</var>
+</pre><p>For example:</p>
+<pre>     =begin table  :caption&lt;Table of Contents&gt;
+         Constants           1
+
+         Variables           10
+
+         Subroutines         33
+
+         Everything else     57
+     =end table
+
+        =begin Name  :required
+        =            :width(50)
+        The applicant&#39;s full name
+        =end Name
+
+        =begin Contact  :optional
+            The applicant&#39;s contact details
+        =end Contact
+</pre><p>Note that no blank lines are required around the directives; blank lines within the contents are always treated as part of the contents. This is a universal feature of Pod.</p>
+<p>Note also that in the following specifications, a "blank line" is a line that is either empty or that contains only whitespace characters. That is, a blank line matches the Perl 6 pattern: <code>/^^ \h* $$/</code>. Pod uses blank lines as delimiters, rather than empty lines, to minimize unpleasant surprises when stray spaces or tabs mysteriously turn up in hitherto empty lines.</p>
+</body>
 </html>
 
