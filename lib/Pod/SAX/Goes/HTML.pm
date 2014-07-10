@@ -143,6 +143,11 @@ module Pod::SAX::Goes::HTML {
 			start => sub (:@draft) { push @draft, q[<strong>]},
 			in => sub (:@draft, :$content) { push @draft, $content; },
 			stop => sub (:@draft) { push @draft, q[</strong>]}
+		},
+		sub (:$type where {$type ~~ 'R'}) { True; } => {
+			start => sub (:@draft) { push @draft, q[<var>]},
+			in => sub (:@draft, :$content) { push @draft, escape_html($content); },
+			stop => sub (:@draft) { push @draft, q[</var>]}
 		};
 	my @heading =
 		sub { True; } => {

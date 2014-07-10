@@ -131,14 +131,15 @@ sub get-test-result(Str $source --> Str) {
 		q[	<strong>=end pod</strong></pre>], '=begin code reforms well';
 }
 
-{#| test B<> and I<>
+{#| test B<> and I<> R<>
 	my $pod-str = qq:to[END];
 		=begin para
-		Text B<bold> and I<italic> and B<I<both>> and I<B<in back order>>
+		Text B<bold> and I<italic> and B<I<both>> and I<B<in back order>>. And now R<metasyntactic>.
 		=end para
 		END
     is get-test-result($pod-str),
 		q[<p>Text <strong>bold</strong> and <em>italic</em> and ] ~
-		q[<strong><em>both</em></strong> and <em><strong>in back order</strong></em></p>], 'B<> and I<> work well';
+		q[<strong><em>both</em></strong> and <em><strong>in back order</strong></em>. ] ~
+		q[And now <var>metasyntactic</var>.</p>], 'B<> and I<> and R<> work well';
 }
 
