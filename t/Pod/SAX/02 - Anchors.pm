@@ -4,7 +4,7 @@ use Test;
 
 use Pod::SAX::Anchors;
 
-plan 6;
+plan 9;
 
 {#= test SimpeleAnchor
 	my SimpleAnchor $anchor .= new(:template('<title><%=title%></title>'), :storage({}));
