@@ -97,7 +97,8 @@ module Pod::SAX::Goes::HTML {
 						my $found = %storage{$search} || '_defn_' ~ $search;
 						return True, '#' ~ $found;
 					}
-					$good-meta = CallbackAnchor.new(:callback(&test), :custom({search => $m<extern>}));
+					my %custom = search => "$m<extern>";
+					$good-meta = CallbackAnchor.new(:callback(&test), :custom(%custom));
 			 	} elsif ($m<scheme> && $m<scheme><type> ~~ any('http', 'https')
 			 			&& $m<extern> && $m<extern><from-root>.from == $m<extern><from-root>.to) {
 			 		$good-meta = $m<extern><path>;

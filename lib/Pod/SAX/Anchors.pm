@@ -59,7 +59,7 @@ module Pod::SAX::Anchors {
 
 		method prepare() {
 			my &func = &.callback;
-			my %args = { storage => %.storage, draft => @.draft, custom => %.custom };
+			my %args = storage => %.storage, draft => @.draft, custom => %.custom;
 			%args = filter-args(&func, %args);
 			my @res = &func(|%args);
 			if @res[0] == True {
@@ -76,7 +76,11 @@ module Pod::SAX::Anchors {
 		for $anchor.^attributes.grep({.rw}) {
 			my $name = $_.name.substr(2);
 			if ($name ~~ any(%args.keys)) {
-				$anchor."$name"() = %args{$name};
+				if ($name eq 'draft') {
+					$anchor."{$name}"() = %args{$name};
+				} else {
+					$anchor."{$name}"() = %(%args{$name});
+				}
 			}
 		}
 	}
