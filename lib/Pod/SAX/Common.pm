@@ -40,7 +40,7 @@ module Pod::SAX::Common {
 		return %result;
 	}
 
-	sub get-bare-content($pod --> Array) is export {
+	sub get-bare-content($pod) is export {
 		my @result;
 		my PodIterator $iter .= new;
 		$iter.init($pod);
@@ -48,6 +48,6 @@ module Pod::SAX::Common {
 		while (@pair = $iter.get-next).elems > 1 {
 			@result.push(@pair[0]) if @pair[1] == 0;
 		}
-		return @result;
+		return @result.join;
 	}
 }

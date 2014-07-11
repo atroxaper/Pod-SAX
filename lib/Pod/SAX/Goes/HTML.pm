@@ -79,12 +79,12 @@ module Pod::SAX::Goes::HTML {
 		};
 	my @formatting =
 		sub (:$type where {$type ~~ 'L'}) { True; } => {
-			start => sub (:@draft, :@meta, :$content, :$instance) {
+			start => sub (:@draft, :@meta, :$instance) {
 				my $good-meta;
 				if @meta {
 					$good-meta = @meta[0];
 				} else { # if meta is't declared than we get bare content
-			 		$good-meta = get-bare-content($instance).join;
+			 		$good-meta = get-bare-content($instance);
 			 	}
 			 	# parse scheme
 			 	# maybe it would better to write special Action for that
