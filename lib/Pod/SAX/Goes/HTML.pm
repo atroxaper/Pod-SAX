@@ -29,15 +29,16 @@ module Pod::SAX::Goes::HTML {
 			stop =>  sub (:@draft) { push @draft, qq[</section>{$N}]; }
 		};
 	my @para =
-		# Title #
+		# that para is content of =TITLE #
 		sub (:@history where {@history.&under-name('TITLE')}) { True; } => {
 			start => sub (:@draft) { push @draft, q[<h1>]; },
 			in => sub (:$content, :@draft, :%storage) {
-				push @draft, qq[{$content}];
+				push @draft, $content;
 				%storage{'TITLE'} = $content;
 			},
 			stop => sub (:@draft) { push @draft, q[</h1>]; }
 		},
+		# that para is content of =head #
 		sub (:@history where {@history.&under-type(Pod::Heading)}) { True; } => {
 			start => sub { True; },
 			in => sub (:$content, :@draft, :%storage) {
@@ -83,14 +84,7 @@ module Pod::SAX::Goes::HTML {
 				if @meta {
 					$good-meta = @meta[0];
 				} else { # if meta is't declared than we get bare content
-			 		my PodIterator $iter .= new;
-			 		$iter.init($instance);
-			 		my @pair;
-			 		my @for-good-meta;
-			 		while (@pair = $iter.get-next).elems > 1 {
-			 			@for-good-meta.push(@pair[0]) if @pair[1] == 0;
-			 		}
-			 		$good-meta = @for-good-meta.join;
+			 		$good-meta = get-bare-content($instance).join;
 			 	}
 			 	# parse scheme
 			 	# maybe it would better to write special Action for that

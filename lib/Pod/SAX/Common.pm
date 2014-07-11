@@ -1,5 +1,7 @@
 module Pod::SAX::Common {
 
+	use Pod::SAX::Iter;
+
 	sub get-pod(Str $source) is export {
 		EVAL $source ~ "\n\$=pod";
 	}
@@ -36,5 +38,16 @@ module Pod::SAX::Common {
 			%result{$key} = %args{$key} if $key eq any(@param-names);
 		}
 		return %result;
+	}
+
+	sub get-bare-content($pod --> Array) is export {
+		my @result;
+		my PodIterator $iter .= new;
+		$iter.init($pod);
+		my @pair;
+		while (@pair = $iter.get-next).elems > 1 {
+			@result.push(@pair[0]) if @pair[1] == 0;
+		}
+		return @result;
 	}
 }

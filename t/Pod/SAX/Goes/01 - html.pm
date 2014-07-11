@@ -56,9 +56,9 @@ sub get-test-result(Str $source --> Str) {
 		Heading11
 		END
 	is get-test-result($pod-str),
-		q[<h1>Heading1</h1>] ~
-		q[<h2>Heading2</h2>] ~
-		q[<h1>Heading11</h1>], 'just headings';
+		q[<h1 id="Heading1">Heading1</h1>] ~
+		q[<h2 id="Heading2">Heading2</h2>] ~
+		q[<h1 id="Heading11">Heading11</h1>], 'just headings';
 }
 
 {# links
