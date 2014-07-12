@@ -15,3 +15,8 @@ On work currently. You can see example of the module's work at http://atroxaper.
 * Formating B<> R<> I<> C<>
 * Code blocks with formating
 * Tables
+* Table of contents
+
+### Known issues
+
+* Pod::SAX::Goes::HTML can throw SIGSEGV on Rakudo Parrot

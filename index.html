@@ -27,11 +27,11 @@
 </tbody>
 </table>
 </section>
-<h1 id="Pod">Pod</h1><p>
+<h1 id="Pod"><a class="u" href="#___top" title="go to top document">Pod</a></h1><p>
 <dfn id="_defn_Pod">Pod</dfn> is an easy-to-use markup language with a simple, consistent underlying document object model. Pod can be used for writing language documentation, for documenting programs and modules, as well as for other types of document composition.</p>
 <p>Pod is an evolution of Perl 5's <a href="doc:perlpod">
 <em>Plain Ol' Documentation</em></a> (POD) markup. Compared to POD, Perl 6's Pod is much more uniform, somewhat more compact, and considerably more expressive. The Pod dialect also differs in that it is a purely descriptive mark-up notation, with no presentational components.</p>
-<h2 id="General syntactic structure">General syntactic structure</h2><p>Pod documents are specified using 
+<h2 id="General syntactic structure"><a class="u" href="#___top" title="go to top document">General syntactic structure</a></h2><p>Pod documents are specified using 
 <dfn id="_defn_directives">directives</dfn>, which are used to declare configuration information and to delimit blocks of textual content. All Pod directives are considered to be special types of comments in Perl 6.</p>
 <p>Every directive starts either with an equals sign (<code>=</code>) followed immediately by an identifier , or with a <code>#=</code> or <code>#|</code> followed immediately by whitespace or an opening bracket.</p>
 <p>Directives that start with <code>=</code> can be indented like the code they interleave, but their initial <code>=</code> must still be the first non-whitespace character on their line. Directives that start with <code>#=</code> or <code>#|</code> can be placed anywhere that a Perl 6 comment can appear, though they are meaningful only in a subset of those places; see <a href="#Declarator blocks">#Declarator blocks</a>.</p>
@@ -39,7 +39,7 @@
 <em>virtual left margin</em>, determined by the indentation of its opening delimiter.</p>
 <p>In other words, if a directive is indented from the left margin, the column at which the first character of its opening delimiter appears is thereafter considered the first column of the entire block's contents.</p>
 <p>As with Perl 6 heredocs, the virtual margin treats leading tabs as aligning to tabstops spaced every <code>($?TABSTOP // 8)</code> characters.</p>
-<h2 id="Pod blocks">Pod blocks</h2><p>The content of a document is specified within one or more 
+<h2 id="Pod blocks"><a class="u" href="#___top" title="go to top document">Pod blocks</a></h2><p>The content of a document is specified within one or more 
 <dfn id="_defn_blocks">blocks</dfn>. Every Pod block may be declared in any of four forms:</p>
 <p><a href="#Delimited blocks">
 <em>delimited style</em></a>, <a href="#Paragraph
@@ -59,7 +59,7 @@ blocks">
         $this = pod(&#39;also&#39;);  # Specifically, a code block
 
     <strong>=end pod</strong>
-</pre><h3 id="Delimited blocks">Delimited blocks</h3><p>Delimited blocks are bounded by <code>=begin</code> and <code>=end</code> markers, both of which are followed by a valid Perl 6 identifier, which is the 
+</pre><h3 id="Delimited blocks"><a class="u" href="#___top" title="go to top document">Delimited blocks</a></h3><p>Delimited blocks are bounded by <code>=begin</code> and <code>=end</code> markers, both of which are followed by a valid Perl 6 identifier, which is the 
 <dfn id="_defn_typename">typename</dfn> of the block. Typenames that are entirely lowercase (for example: <code>=begin head1</code>) or entirely uppercase (for example: <code>=begin SYNOPSIS</code>) are reserved.</p>
 <p>After the typename, the rest of the <code>=begin</code> marker line is treated as configuration information for the block. This information is used in different ways by different types of blocks, but is always specified using Perl6-ish option pairs. That is, any of:</p>
 <table>
