@@ -24,7 +24,7 @@ module Pod::SAX::Goes::HTML {
 			}
 			$c-level = $n-level;
 			# render <li><a></a></li> #
-			@result.push(qq[<li class="indexItem indexItem{$c-level}"><a href="#{@head[1]}">{@head[1]}</a></li>]);
+			@result.push(qq[<li class="indexItem indexItem{$c-level}"><a href="#{@head[1]}">{@head[2]}</a></li>]);
 		}
 		# last </ol>s #
 		loop (my $i = $c-level; $i > 0; --$i) {
@@ -39,7 +39,7 @@ module Pod::SAX::Goes::HTML {
 			in => sub (:$content) { say qq[find comment: $content]; }
 		};
 	my @named =
-		# =begin pod
+		# =begin pod #
 		sub (:$name where {$name ~~ 'pod'}) { True; } => {
 			start => sub (:@draft) {
 				@draft.push(
@@ -122,7 +122,7 @@ module Pod::SAX::Goes::HTML {
 			 	# maybe it would better to write special Action for that
 			 	my $m = MetaL.parse($good-meta);
 			 	if ($m<scheme> && $m<scheme><type> eq 'doc' && $m<intern>) {
-			 		$good-meta = $m<intern>;
+			 		$good-meta = "$m<intern>";
 			 	} elsif ($m<scheme> && $m<scheme><type> eq 'defn') {
 			 		sub test(:%storage, :%custom) {
 						my $search = %custom<search>;
@@ -133,9 +133,10 @@ module Pod::SAX::Goes::HTML {
 					$good-meta = CallbackAnchor.new(:callback(&test), :custom(%custom));
 			 	} elsif ($m<scheme> && $m<scheme><type> ~~ any('http', 'https')
 			 			&& $m<extern> && $m<extern><from-root>.from == $m<extern><from-root>.to) {
-			 		$good-meta = $m<extern><path>;
-			 		$good-meta ~= $m<intern> if $m<intern>;
+			 		$good-meta = "$m<extern><path>";
+			 		$good-meta ~= "$m<intern>" if $m<intern>;
 			 	}
+			 	$good-meta = escape_id($good-meta) if $good-meta ~~ Str;
 
 				push @draft, q[<a href="], $good-meta, q[">];
 			},
@@ -152,7 +153,7 @@ module Pod::SAX::Goes::HTML {
 		sub (:$type where {$type ~~ 'D'}) { True; } => {
 			start => sub (:@draft) { push @draft, qq[{$N}<dfn id="]; },
 			in => sub (:@draft, :$content, :%storage, :@meta) {
-				my $id = '_defn_' ~ $content;
+				my $id = '_defn_' ~ escape_id($content);
 				push @draft, qq[{$id}">];
 				push @draft, $content;
 				%storage{$content} = $id;
@@ -179,9 +180,10 @@ module Pod::SAX::Goes::HTML {
 		sub { True; } => {
 			start => sub (:@draft, :$level, :$instance, :%storage) {
 				my $bare = get-bare-content($instance);
-				push @draft, qq[<h{$level} id="$bare">];
+				my $bare-id = escape_id($bare);
+				push @draft, qq[<h{$level} id="{$bare-id}">];
 				my @toc = @(%storage<toc>) || ();
-				@toc[+@toc] = $level, $bare;
+				@toc[+@toc] = $level, $bare-id, $bare;
 				%storage<toc> = @toc;
 			},
 			stop => sub (:@draft, :$level) { push @draft, qq[</h{$level}>]; }
@@ -212,5 +214,10 @@ module Pod::SAX::Goes::HTML {
 
         $str.trans( [ q{&},     q{<},    q{>},    q{"},      q{'}     ] =>
                     [ q{&amp;}, q{&lt;}, q{&gt;}, q{&quot;}, q{&#39;} ] );
+    }
+
+    # I stole that sub from L<Pod::To::HTML module|https://github.com/perl6/Pod-To-HTML>
+    sub escape_id ($id) {
+        $id.subst(/\s+/, '_', :g);
     }
 }

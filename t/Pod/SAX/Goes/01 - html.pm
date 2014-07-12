@@ -74,8 +74,8 @@ sub get-test-result(Str $source --> Str) {
 		'L<mailto:devnull@rt.cpan.org>' => q[<a href="mailto:devnull@rt.cpan.org">mailto:devnull@rt.cpan.org</a>],
 		'L<man:find(1)>' => q[<a href="man:find(1)">man:find(1)</a>],
 		'L<doc:perldata>' => q[<a href="doc:perldata">doc:perldata</a>],
-		'L<doc:#Special Features>' => q[<a href="#Special Features">doc:#Special Features</a>],
-		'L<#Special Features>' => q[<a href="#Special Features">#Special Features</a>],
+		'L<doc:#Special Features>' => q[<a href="#Special_Features">doc:#Special Features</a>],
+		'L<#Special Features>' => q[<a href="#Special_Features">#Special Features</a>],
 		'L<defn:lexiphania>' => q[<a href="#_defn_lexiphania">defn:lexiphania</a>],
 		'L<issn:1087-903X>' => q[<a href="issn:1087-903X">issn:1087-903X</a>],
 		'L<isbn:2-266-11156-6>' => q[<a href="isbn:2-266-11156-6">isbn:2-266-11156-6</a>],
@@ -170,16 +170,16 @@ sub get-test-result(Str $source --> Str) {
 	my $expect = qq:to[END];
 		<nav class="indexgroup">
 		<ol class="indexList indexList1">
-		<li class="indexItem indexItem1"><a href="#Heading 1">Heading 1</a></li>
+		<li class="indexItem indexItem1"><a href="#Heading_1">Heading 1</a></li>
 		<ol class="indexList indexList2">
-		<li class="indexItem indexItem2"><a href="#Heading 2">Heading 2</a></li>
+		<li class="indexItem indexItem2"><a href="#Heading_2">Heading 2</a></li>
 		</ol>
-		<li class="indexItem indexItem1"><a href="#Heading 11">Heading 11</a></li>
+		<li class="indexItem indexItem1"><a href="#Heading_11">Heading 11</a></li>
 		</ol>
 		</nav>
-		<h1 id="Heading 1">{$heading-to-top}Heading 1</a></h1>
-		<h2 id="Heading 2">{$heading-to-top}Heading 2</a></h2>
-		<h1 id="Heading 11">{$heading-to-top}Heading 11</a></h1>
+		<h1 id="Heading_1">{$heading-to-top}Heading 1</a></h1>
+		<h2 id="Heading_2">{$heading-to-top}Heading 2</a></h2>
+		<h1 id="Heading_11">{$heading-to-top}Heading 11</a></h1>
 		</body></html>
 		END
 
