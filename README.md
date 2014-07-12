@@ -20,3 +20,5 @@ On work currently. You can see example of the module's work at http://atroxaper.
 ### Known issues
 
 * Pod::SAX::Goes::HTML can throw SIGSEGV on Rakudo Parrot
+* =output blocks work not so good because current Grammar parses it not good enough
+* We can't use formatting inside tables - Grammar issues

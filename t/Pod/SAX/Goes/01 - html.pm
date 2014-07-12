@@ -187,7 +187,7 @@ sub get-test-result(Str $source --> Str) {
 	is $/.postmatch, $expect.&rm-n, 'table of contents';
 }
 
-{#| =begin output test
+{#| =begin output test. todo Grammar parses paragraphs wrong
 	my $pod-str = qq:to[END];
 		=begin output
 		Name: Magic::Necrotelecomnicon:
