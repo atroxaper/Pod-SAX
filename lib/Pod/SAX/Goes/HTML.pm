@@ -35,12 +35,12 @@ module Pod::SAX::Goes::HTML {
 	}
 
 	my @comment =
-		sub { True; } => {
+		:() => {
 			in => sub (:$content) { say qq[find comment: $content]; }
 		};
 	my @named =
 		# =begin pod #
-		sub (:$name where {$name ~~ 'pod'}) { True; } => {
+		:(:$name where {$name ~~ 'pod'}) => {
 			start => sub (:@draft) {
 				@draft.push(
 					qq[<!doctype html>{$N}<html>{$N}<head>{$N}],
@@ -53,17 +53,17 @@ module Pod::SAX::Goes::HTML {
 				@draft.push(qq[</body>{$N}</html>{$N}]);
 			}
 		},
-		sub (:$name where {$name ~~ any('VERSION', 'AUTHOR')}) { True; } => {
+		:(:$name where {$name ~~ any('VERSION', 'AUTHOR')}) => {
 			start => sub (:@draft, :$name) { push @draft, qq[<section>{$N}<h1>{$name}</h1>{$N}]; },
 			stop =>  sub (:@draft) { push @draft, qq[</section>{$N}]; }
 		},
-		sub (:$name where {$name eq 'output'}) { True; } => {
+		:(:$name where {$name eq 'output'}) => {
 			start => sub (:@draft) { push @draft, q[<samp>]},
 			stop => sub (:@draft) { push @draft, q[</samp>]}
 		};
 	my @para =
 		# that para is content of =TITLE #
-		sub (:@history where {@history.&under-name('TITLE')}) { True; } => {
+		:(:@history where {@history.&under-name('TITLE')}) => {
 			start => sub (:@draft) { push @draft, q[<h1>]; },
 			in => sub (:$content, :@draft, :%storage) {
 				push @draft, $content;
@@ -77,7 +77,7 @@ module Pod::SAX::Goes::HTML {
 			}
 		},
 		# that para is content of =head #
-		sub (:@history where {@history.&under-type(Pod::Heading)}) { True; } => {
+		:(:@history where {@history.&under-type(Pod::Heading)}) => {
 			start => sub { True; },
 			in => sub (:$content, :@draft, :%storage) {
 				push @draft, qq[<a class="u" href="#___top" title="go to top document">{$content}</a>];
@@ -85,19 +85,19 @@ module Pod::SAX::Goes::HTML {
 			stop => sub { True; }
 		},
 		# that para is content of =begin output #
-		sub (:@history where {@history.&under-name('output')}) { True;} => {
+		:(:@history where {@history.&under-name('output')}) => {
 			start => sub { True; },
 			in => sub (:$content, :@draft) { push @draft, $content },
 			stop => sub (:@draft) { push @draft, q[</br>]; }
 		},
 		# General Paragraph #
-		sub { True; } => {
+		:() => {
 			start => sub (:@draft) { push @draft, "<p>"; },
 			in => sub (:@draft, :$content) { push @draft, $content; },
 			stop => sub (:@draft) { push @draft, "</p>{$N}"; }
 		};
 	my @table =
-		sub { True; } => {
+		:() => {
 			start => sub (:$caption, :@headers, :@draft) {
 				push @draft, qq[<table>{$N}];
 				# render headers #
@@ -121,7 +121,7 @@ module Pod::SAX::Goes::HTML {
 			stop => sub (:@draft) {	push @draft, qq[</tbody>{$N}</table>{$N}]; }
 		};
 	my @formatting =
-		sub (:$type where {$type ~~ 'L'}) { True; } => {
+		:(:$type where {$type ~~ 'L'}) => {
 			start => sub (:@draft, :@meta, :$instance) {
 				my $good-meta;
 				if @meta {
@@ -156,12 +156,12 @@ module Pod::SAX::Goes::HTML {
 			},
 			stop => sub (:@draft) {	push @draft, qq[</a>]; }
 		},
-		sub (:$type where {$type ~~ 'C'}) { True; } => {
+		:(:$type where {$type ~~ 'C'}) => {
 			start => sub (:@draft) { push @draft, q[<code>]; },
 			in => sub (:@draft, :$content) { push @draft, $content; },
 			stop => sub (:@draft) { push @draft, q[</code>]; }
 		},
-		sub (:$type where {$type ~~ 'D'}) { True; } => {
+		:(:$type where {$type ~~ 'D'}) => {
 			start => sub (:@draft) { push @draft, qq[{$N}<dfn id="]; },
 			in => sub (:@draft, :$content, :%storage, :@meta) {
 				my $id = '_defn_' ~ escape_id($content);
@@ -172,23 +172,23 @@ module Pod::SAX::Goes::HTML {
 			},
 			stop => sub (:@draft) { push @draft, qq[</dfn>]; }
 		},
-		sub (:$type where {$type ~~ 'I'}) { True; } => {
+		:(:$type where {$type ~~ 'I'}) => {
 			start => sub (:@draft) { push @draft, qq[{$N}<em>]; },
 			in => sub (:@draft, :$content) { push @draft, $content; },
 			stop => sub (:@draft) { push @draft, qq[</em>]; }
 		},
-		sub (:$type where {$type ~~ 'B'}) { True; } => {
+		:(:$type where {$type ~~ 'B'}) => {
 			start => sub (:@draft) { push @draft, q[<strong>]},
 			in => sub (:@draft, :$content) { push @draft, $content; },
 			stop => sub (:@draft) { push @draft, q[</strong>]}
 		},
-		sub (:$type where {$type ~~ 'R'}) { True; } => {
+		:(:$type where {$type ~~ 'R'}) => {
 			start => sub (:@draft) { push @draft, q[<var>]},
 			in => sub (:@draft, :$content) { push @draft, escape_html($content); },
 			stop => sub (:@draft) { push @draft, q[</var>]}
 		};
 	my @heading =
-		sub { True; } => {
+		:() => {
 			start => sub (:@draft, :$level, :$instance, :%storage) {
 				my $bare = get-bare-content($instance);
 				my $bare-id = escape_id($bare);
@@ -200,7 +200,7 @@ module Pod::SAX::Goes::HTML {
 			stop => sub (:@draft, :$level) { push @draft, qq[</h{$level}>]; }
 		};
 	my @code =
-		sub { True; } => {
+		:() => {
 			start => sub (:@draft) { push @draft, qq[<pre>]; },
 			in => sub (:@draft, :$content) { push @draft, escape_html($content); },
 			stop => sub (:@draft) { push @draft, qq[</pre>]; }

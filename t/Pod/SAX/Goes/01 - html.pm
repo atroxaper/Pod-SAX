@@ -6,7 +6,7 @@ use Pod::SAX::Goes::HTML;
 use Pod::SAX::Reformer;
 use Pod::SAX::Common;
 
-plan 24;
+plan 25;
 
 # some consts #
 my $heading-to-top = q[<a class="u" href="#___top" title="go to top document">];

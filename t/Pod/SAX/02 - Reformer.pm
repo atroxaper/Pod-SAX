@@ -85,7 +85,7 @@ plan 19;
 	is $reformer.draft.join('|'), 'start of head|stop of head', 'callback for start and stop of head';
 }
 
-{#= history support test
+{#= history support test. Test a using signature instead of sub as selector
 	my $pod-string = qq:to[END];
 		=begin pod
 		=head1
@@ -103,7 +103,7 @@ plan 19;
 			stop => sub (:@draft, :$level) { push @draft, "</h$level>"; True; }
 		};
 	my @para =
-		sub (:@history where {@history && @history[*-1] ~~ Pod::Heading}) { True; } => {
+		:(:@history where {@history && @history[*-1] ~~ Pod::Heading}) => {
 			in => sub (:@draft, :$content) { push @draft, "big para $content"; True; }
 		},
 		sub { True; } => {
