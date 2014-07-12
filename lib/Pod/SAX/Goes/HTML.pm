@@ -6,6 +6,34 @@ module Pod::SAX::Goes::HTML {
 
 	my $N = "\n";
 
+	sub render-toc(:%storage) {
+		return True, '' unless %storage<toc>;
+		my @result;
+		my @with-headers = @(%storage<toc>);
+
+		my $c-level = 0;
+		push @result, '<nav class="indexgroup">';
+		for @with-headers -> @head {
+			my $n-level = @head[0];
+			# render <ol> and </ol> #
+			loop (my $i = $c-level + 1; $i <= $n-level; ++$i) {
+				@result.push(qq[<ol class="indexList indexList{$i}">]);
+			}
+			loop ($i = $c-level; $i > $n-level; --$i) {
+				@result.push(q[</ol>]);
+			}
+			$c-level = $n-level;
+			# render <li><a></a></li> #
+			@result.push(qq[<li class="indexItem indexItem{$c-level}"><a href="#{@head[1]}">{@head[1]}</a></li>]);
+		}
+		# last </ol>s #
+		loop (my $i = $c-level; $i > 0; --$i) {
+			@result.push(q[</ol>]);
+		}
+		push @result, "</nav>";
+		return True, @result.join;
+	}
+
 	my @comment =
 		sub { True; } => {
 			in => sub (:$content) { say qq[find comment: $content]; }
@@ -36,14 +64,18 @@ module Pod::SAX::Goes::HTML {
 				push @draft, $content;
 				%storage{'TITLE'} = $content;
 			},
-			stop => sub (:@draft) { push @draft, q[</h1>]; }
+			stop => sub (:@draft) {
+				push @draft, q[</h1>];
+				# TOC should be after the title of page #
+				my $toc = CallbackAnchor.new(:callback(&render-toc), :priority(1));
+				push @draft, $toc;
+			}
 		},
 		# that para is content of =head #
 		sub (:@history where {@history.&under-type(Pod::Heading)}) { True; } => {
 			start => sub { True; },
 			in => sub (:$content, :@draft, :%storage) {
 				push @draft, $content;
-				# TODO add code for table of contents
 			},
 			stop => sub { True; }
 		},
@@ -145,7 +177,13 @@ module Pod::SAX::Goes::HTML {
 		};
 	my @heading =
 		sub { True; } => {
-			start => sub (:@draft, :$level) { push @draft, qq[<h{$level}>]; },
+			start => sub (:@draft, :$level, :$instance, :%storage) {
+				my $bare = get-bare-content($instance);
+				push @draft, qq[<h{$level} id="$bare">];
+				my @toc = @(%storage<toc>) || ();
+				@toc[+@toc] = $level, $bare;
+				%storage<toc> = @toc;
+			},
 			stop => sub (:@draft, :$level) { push @draft, qq[</h{$level}>]; }
 		};
 	my @code =

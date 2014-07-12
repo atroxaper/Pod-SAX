@@ -6,7 +6,7 @@ use Pod::SAX::Goes::HTML;
 use Pod::SAX::Reformer;
 use Pod::SAX::Common;
 
-plan 23;
+plan 24;
 
 sub rm-n($str) {
 	return $str.subst(/\n/, '', :g);
@@ -142,5 +142,44 @@ sub get-test-result(Str $source --> Str) {
 		q[<p>Text <strong>bold</strong> and <em>italic</em> and ] ~
 		q[<strong><em>both</em></strong> and <em><strong>in back order</strong></em>. ] ~
 		q[And now <var>metasyntactic</var>.</p>], 'B<> and I<> and R<> work well';
+}
+
+{# heading
+	my $pod-str = qq:to[END];
+		=begin pod
+
+		=TITLE
+		This Title
+
+		=head1
+		Heading 1
+
+		=head2
+		Heading 2
+
+		=head1
+		Heading 11
+
+		=end pod
+		END
+	my $result = get-test-result($pod-str);
+	$result ~~ m/'<h1>This Title</h1>'/;
+	my $expect = q:to[END];
+		<nav class="indexgroup">
+		<ol class="indexList indexList1">
+		<li class="indexItem indexItem1"><a href="Heading 1">Heading 1</a></li>
+		<ol class="indexList indexList2">
+		<li class="indexItem indexItem2"><a href="Heading 2">Heading 2</a></li>
+		</ol>
+		<li class="indexItem indexItem1"><a href="Heading 11">Heading 11</a></li>
+		</ol>
+		</nav>
+		<h1 id="Heading 1">Heading 1</h1>
+		<h2 id="Heading 2">Heading 2</h2>
+		<h1 id="Heading 11">Heading 11</h1>
+		</body></html>
+		END
+
+	is $/.postmatch, $expect.&rm-n, 'table of contents';
 }
 
