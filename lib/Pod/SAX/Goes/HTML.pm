@@ -42,76 +42,76 @@ module Pod::SAX::Goes::HTML {
 		# =begin pod #
 		:(:$name where 'pod') => {
 			start => {
-				@:draft.push(
+				append(
 					qq[<!doctype html>{$N}<html>{$N}<head>{$N}],
 					SimpleAnchor.new(:template(qq[<title><%=TITLE%></title>{$N}])),
 					qq[</head>{$N}<body class="pod" id="___top">{$N}]
 				);
 			},
 			stop => {
-				@:draft.push(qq[</body>{$N}</html>{$N}]);
+				append(qq[</body>{$N}</html>{$N}]);
 			}
 		},
 		:(:$name where 'VERSION' | 'AUTHOR') => {
-			start => { push @:draft, qq[<section>{$N}<h1>$:name\</h1>{$N}]; },
-			stop =>  { push @:draft, qq[</section>{$N}]; }
+			start => { append qq[<section>{$N}<h1>$:name\</h1>{$N}]; },
+			stop =>  { append qq[</section>{$N}]; }
 		};
 	my @para =
 		# that para is content of =TITLE #
 		:(:@history where *.&under-name('TITLE')) => {
-			start => { push @:draft, q[<h1>]; },
+			start => { append q[<h1>]; },
 			in => {
-				push @:draft, $:content;
+				append $:content;
 				%:storage{'TITLE'} = $:content;
 			},
 			stop => {
-				push @:draft, q[</h1>];
+				append q[</h1>];
 				# TOC should be after the title of page #
 				my $toc = CallbackAnchor.new(:callback(&render-toc), :priority(1));
-				push @:draft, $toc;
+				append $toc;
 			}
 		},
 		# that para is content of =head #
 		:(:@history where *.&under-type(Pod::Heading)) => {
 			start => { True },
 			in => {
-				push @:draft, qq[<a class="u" href="#___top" title="go to top document">$:content\</a>];
+				append qq[<a class="u" href="#___top" title="go to top document">$:content\</a>];
 			},
 			stop => { True }
 		},
 		# General Paragraph #
 		:() => {
-			start => { push @:draft, "<p>"; },
-			in => { push @:draft, $:content; },
-			stop => { push @:draft, "</p>{$N}"; }
+			start => { append "<p>"; },
+			in => { append $:content; },
+			stop => { append "</p>{$N}"; }
 		};
 	my @table =
 		:() => {
 			start => {
-				push @:draft, qq[<table>{$N}];
+				append qq[<table>{$N}];
 				# render headers #
 				if (@:headers && +@:headers > 0) {
-					push @draft, qq[<thead>{$N}<tr>{$N}];
+					append qq[<thead>{$N}<tr>{$N}];
 					for @headers -> $header {
-						push @draft, qq[<th>{$header}</th>{$N}];
+						append qq[<th>{$header}</th>{$N}];
 					}
-					push @draft, qq[</tr>{$N}</thead>{$N}];
+					append qq[</tr>{$N}</thead>{$N}];
 				}
 
-				push @draft, qq[<tbody>{$N}];
+				append qq[<tbody>{$N}];
 			},
 			in => {
-				push @:draft, qq[<tr>{$N}];
+				append qq[<tr>{$N}];
 				for @($:content) -> $td {
-					push @draft, qq[<td>{$td}</td>{$N}];
+					append qq[<td>{$td}</td>{$N}];
 				}
-				push @draft, qq[</tr>{$N}];
+				append qq[</tr>{$N}];
 			},
-			stop => { push @:draft, qq[</tbody>{$N}</table>{$N}]; }
+			stop => { append qq[</tbody>{$N}</table>{$N}]; }
 		};
 	my @formatting =
 		:(:$type where 'L') => {
-			start => sub (:@draft, :$instance, :@meta) {
+			start => sub (:$instance, :@meta) {
 				my $good-meta;
 				if @meta {
 					$good-meta = @meta[0];
@@ -138,61 +138,61 @@ module Pod::SAX::Goes::HTML {
 			 	}
 			 	$good-meta = escape_id($good-meta) if $good-meta ~~ Str;
 
-				push @draft, q[<a href="], $good-meta, q[">];
+				append q[<a href="], $good-meta, q[">];
 			},
 			in => {
-				push @:draft, $:content;
+				append $:content;
 			},
-			stop => { push @:draft, qq[</a>]; }
+			stop => { append qq[</a>]; }
 		},
 		:(:$type where 'C') => {
-			start => { push @:draft, q[<code>]; },
-			in => { push @:draft, $:content; },
-			stop => { push @:draft, q[</code>]; }
+			start => { append q[<code>]; },
+			in => { append $:content; },
+			stop => { append q[</code>]; }
 		},
 		:(:$type where 'D') => {
-			start => { push @:draft, qq[{$N}<dfn id="]; },
+			start => { append qq[{$N}<dfn id="]; },
 			in => {
 				my $id = '_defn_' ~ escape_id($:content);
-				push @:draft, qq[{$id}">];
-				push @draft, $:content;
+				append qq[{$id}">];
+				append $:content;
 				%:storage{$:content} = $id;
 				%:storage{$_} = $id for @:meta;
 			},
-			stop => { push @:draft, qq[</dfn>]; }
+			stop => { append qq[</dfn>]; }
 		},
 		:(:$type where 'I') => {
-			start => { push @:draft, qq[{$N}<em>]; },
-			in => { push @:draft, $:content; },
-			stop => { push @:draft, qq[</em>]; }
+			start => { append qq[{$N}<em>]; },
+			in => { append $:content; },
+			stop => { append qq[</em>]; }
 		},
 		:(:$type where 'B') => {
-			start => { push @:draft, q[<strong>]},
-			in => { push @:draft, $:content; },
-			stop => { push @:draft, q[</strong>]}
+			start => { append q[<strong>]},
+			in => { append $:content; },
+			stop => { append q[</strong>]}
 		},
 		:(:$type where 'R') => {
-			start => { push @:draft, q[<var>]},
-			in => { push @:draft, escape_html($:content); },
-			stop => { push @:draft, q[</var>]}
+			start => { append q[<var>]},
+			in => { append escape_html($:content); },
+			stop => { append q[</var>]}
 		};
 	my @heading =
 		:() => {
 			start => {
 				my $bare = get-bare-content($:instance);
 				my $bare-id = escape_id($bare);
-				push @:draft, qq[<h$:level id="{$bare-id}">];
+				append qq[<h$:level id="{$bare-id}">];
 				my @toc = @(%:storage<toc>) || ();
 				@toc[+@toc] = $:level, $bare-id, $bare;
 				%:storage<toc> = @toc;
 			},
-			stop => { push @:draft, qq[</h$:level>]; }
+			stop => { append qq[</h$:level>]; }
 		};
 	my @code =
 		:() => {
-			start => { push @:draft, qq[<pre>]; },
-			in => { push @:draft, escape_html($:content); },
-			stop => { push @:draft, qq[</pre>]; }
+			start => { append qq[<pre>]; },
+			in => { append escape_html($:content); },
+			stop => { append qq[</pre>]; }
 		};
 
 	sub make-reformer() is export {

@@ -23,7 +23,9 @@ class Reformer {
 		$!iter .= new;
 		$!iter.init($pod);
 		my @history;
+        my @*draft;
 		self!visit(($!iter.get-next)[0], @history);
+        @!draft ,= @*draft;
 		return True;
 	}
 
@@ -97,7 +99,6 @@ class Reformer {
 	method make-attrs($pod, $caller, @history, %state) {
 		my %result = self.get-attributes($pod);
 		%result<instance> = $pod;
-		%result<draft> = $caller.draft;
 		%result<history> = @history;
 		%result<storage> = $caller.storage;
 		%result<state> = %state;

@@ -14,6 +14,10 @@ module Pod::SAX::Common {
 		return so @history && @history[*-1] ~~ $type;
 	}
 
+    sub append(*@a) is export {
+        push @*draft, |@a;
+    }
+
 	grammar MetaL is export {
 		token TOP {
 			<scheme>?
