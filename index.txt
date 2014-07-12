@@ -1,0 +1,682 @@
+=begin pod
+
+=comment
+This file is deliberately specified in Perl 6 Pod format
+
+=TITLE
+Synopsis 26 - Documentation
+
+=for AUTHOR
+Damian Conway <L<C<damian@conway.org>|mailto:damian@conway.org>>
+
+=begin VERSION
+    =table
+        Maintainer:     Damian Conway
+        Date:           9 Apr 2005
+        Last Modified:  3 Mar 2014
+=end VERSION
+
+=head1
+Pod
+
+D<Pod> is an easy-to-use markup language with a simple, consistent
+underlying document object model. Pod can be used for writing language
+documentation, for documenting programs and modules, as well as for
+other types of document composition.
+
+Pod is an evolution of Perl 5's L<I<Plain Ol' Documentation>|doc:perlpod>
+(POD) markup. Compared to POD, Perl 6's Pod is much more
+uniform, somewhat more compact, and considerably more expressive. The
+Pod dialect also differs in that it is a purely descriptive mark-up
+notation, with no presentational components.
+
+
+=head2 General syntactic structure
+
+Pod documents are specified using D<directives|directive>, which are
+used to declare configuration information and to delimit blocks of
+textual content. All Pod directives are considered to be special types
+of comments in Perl 6.
+
+Every directive starts either with an equals sign (C<=>) followed
+immediately by an identifier N<as specified in Synopsis 2>, or with
+a C<#=> or C<#|> followed immediately by whitespace or an opening bracket.
+
+Directives that start with C<=> can be indented like the code they
+interleave, but their initial C<=> must still be the first non-whitespace
+character on their line. Directives that start with C<#=> or C<#|> can be placed
+anywhere that a Perl 6 comment can appear, though they are meaningful
+only in a subset of those places; see L<#Declarator blocks>.
+
+An indented Pod block is considered to have a I<virtual left margin>,
+determined by the indentation of its opening delimiter.
+
+In other words, if a directive is indented from the left margin, the
+column at which the first character of its opening delimiter appears is
+thereafter considered the first column of the entire block's contents.
+
+As with Perl 6 heredocs, the virtual margin treats leading tabs as
+aligning to tabstops spaced every C<($?TABSTOP // 8)> characters.
+
+=head2
+Pod blocks
+
+The content of a document is specified within one or more D<blocks|block>.
+Every Pod block may be declared in any of four forms:
+
+L<I<delimited style>|#Delimited blocks>, L<I<paragraph style>|#Paragraph
+blocks>, L<I<abbreviated style>|#Abbreviated blocks>, or L<I<declarator
+style>|#Declarator blocks>. The first three forms are all equivalent; the
+fourth is distinct.
+
+Anything in a document that is neither a Pod directive nor contained
+within a Pod block is treated as "ambient" material. Typically this
+would be the source code of the program that the Pod is documenting. Pod
+parsers still parse this text into the internal representation of the
+file, representing it as a C<Pod::Block::Ambient> block. Renderers
+will I<usually> ignore such blocks, but see L<#Aliases>.
+
+In Perl 5's POD format, once a POD directive is encountered, the parser
+considers everything that follows to be POD, until an explicit C<=cut>
+directive is encountered, at which point the parser flips back to
+parsing ambient source code. The Perl 6 Pod format is different. All Pod
+directives have a defined terminator and the Pod parser always reverts to
+"ambient" at the end of each Pod directive or block. To cause the parser
+to remain in Pod mode, you must enclose the desired Pod region in a
+C<pod> block:
+
+=begin code :allow<B>
+    B<=begin pod>
+
+    =head1 A heading
+
+    This is Pod too. Specifically, this is a simple C<para> block
+
+        $this = pod('also');  # Specifically, a code block
+
+    B<=end pod>
+=end code
+
+
+=head3 Delimited blocks
+
+Delimited blocks are bounded by C<=begin> and C<=end> markers, both of
+which are followed by a valid Perl 6 identifier, which is the
+D<typename> of the block. Typenames that are entirely lowercase (for
+example: C<=begin head1>) or entirely uppercase (for example: C<=begin
+SYNOPSIS>) are reserved.
+
+After the typename, the rest of the C<=begin> marker line is treated as
+configuration information for the block. This information is used in
+different ways by different types of blocks, but is always specified using
+Perl6-ish option pairs. That is, any of:
+
+=for table :nested
+ Value is...       Specify with...       Or with...       Or with...
+ ===============   ===================   ==============   ======================
+ Boolean (true)    C«:key»               C«:key(1)»       C«key => 1»
+ Boolean (false)   C«:!key»              C«:key(0)»       C«key => 0»
+ String            C«:key<str>»          C«:key('str')»   C«key => 'str'»
+ List              C«:key<1 2 3>»        C«:key[1,2,3]»   C«key => [1,2,3]»
+ Hash              C«:key{a=>1, b=>2}»                    C«key => {a=>1, b=>2}»
+
+All option keys and values must, of course, be constants since Pod is a
+specification language, not a programming language. Specifically, option
+values cannot be closures. See Synopsis 2 for details of the various
+Perl 6 pair notations.
+
+The configuration section may be extended over subsequent lines by
+starting those lines with an C<=> in the first (virtual) column followed
+by a whitespace character.
+
+The lines following the opening delimiter and configuration are the
+data or contents of the block, which continue until the block's matching
+C<=end> marker line. For most block types, these contents may be
+indented if you wish, without them being treated as L<code blocks|#Code
+blocks>. Unlike Perl 5, indented text is only treated as code within
+C<=pod>, L<C<=nested>|#Nesting blocks>, L<C<=item>|#Lists>, C<=code>,
+and L<semantic|#Semantic blocks> blocks.
+
+The general syntax is:
+
+=begin code :allow< R >
+     =begin R<BLOCK_TYPE>  R<OPTIONAL CONFIG INFO>
+     =                  R<OPTIONAL EXTRA CONFIG INFO>
+     R<BLOCK CONTENTS>
+     =end R<BLOCK_TYPE>
+=end code
+
+For example:
+
+=begin code
+     =begin table  :caption<Table of Contents>
+         Constants           1
+
+         Variables           10
+
+         Subroutines         33
+
+         Everything else     57
+     =end table
+
+        =begin Name  :required
+        =            :width(50)
+        The applicant's full name
+        =end Name
+
+        =begin Contact  :optional
+            The applicant's contact details
+        =end Contact
+=end code
+
+Note that no blank lines are required around the directives; blank
+lines within the contents are always treated as part of the contents.
+This is a universal feature of Pod.
+
+Note also that in the following specifications, a "blank line" is a line
+that is either empty or that contains only whitespace characters. That
+is, a blank line matches the Perl 6 pattern: C</^^ \h* $$/>. Pod uses
+blank lines as delimiters, rather than empty lines, to minimize unpleasant
+surprises when stray spaces or tabs mysteriously turn up in hitherto
+empty lines.
+
+=head3 Paragraph blocks
+
+Paragraph blocks are introduced by a C<=for> marker and terminated by
+the next Pod directive or the first blank line (which is I<not>
+considered to be part of the block's contents). The C<=for> marker is
+followed by the name of the block and optional configuration
+information. The general syntax is:
+
+=begin code :allow< R >
+     =for R<BLOCK_TYPE>  R<OPTIONAL CONFIG INFO>
+     =                R<OPTIONAL EXTRA CONFIG INFO>
+     R<BLOCK DATA>
+=end code
+
+For example:
+
+=begin code
+     =for table  :caption<Table of Contents>
+         Constants           1
+         Variables           10
+         Subroutines         33
+         Everything else     57
+
+        =for Name  :required
+        =          :width(50)
+        The applicant's full name
+
+     =for Contact  :optional
+        The applicant's contact details
+
+=end code
+
+=head3 Abbreviated blocks
+
+Abbreviated blocks are introduced by an C<'='> sign in the
+first column, which is followed immediately by the typename of the
+block. The rest of the line is treated as block data, rather than as
+configuration. The content terminates at the next Pod directive or the
+first blank line (which is not part of the block data). The general
+syntax is:
+
+=begin code :allow< R >
+     =R<BLOCK_TYPE>  R<BLOCK DATA>
+     R<MORE BLOCK DATA>
+
+=end code
+
+For example:
+
+=begin code
+     =table
+         Constants           1
+         Variables           10
+         Subroutines         33
+         Everything else     57
+
+        =Name  The applicant's full name
+     =Contact  The applicant's contact details
+
+=end code
+
+Note that abbreviated blocks cannot specify configuration information. If
+configuration is required, use a C<=for> or C<=begin>/C<=end> instead.
+
+=head3 Declarator blocks
+
+The fourth form of Pod block differs from the first three in that it
+does not specify an explicit typename. Instead, it obtains its identity
+and purpose from the Perl 6 source code to which it is attached;
+specifically, from some nearby declarator.
+
+Declarator blocks are introduced by a special Perl comment: either C<#=>
+or C<#|>, which must be immediately followed by either by a space or an
+opening bracket. If followed by a space, the block is terminated by the
+end of line; if followed by one or more opening brackets, the block is
+terminated by the matching sequence of closing brackets.
+
+That is, declarator Pod blocks are syntactically like ordinary Perl 6
+single-line comments and embedded comments. The general syntax is:
+
+=begin code :allow< R >
+
+     #| R<BLOCK DATA TO END OF LINE>
+
+     #|{ R<BLOCK DATA>
+         R<MORE BLOCK DATA>
+       }
+
+     #= R<BLOCK DATA TO END OF LINE>
+
+     #={ R<BLOCK DATA>
+         R<MORE BLOCK DATA>
+       }
+
+=end code
+
+except that the bracketed forms may use I<any> valid Perl 6 bracket delimiter
+(including repeated opening brackets), as described in Synopsis 2.
+
+Declarator Pod blocks must either precede or immediately follow a valid
+Perl 6 declarator, and are then said to be "attached" to it. They are
+primarily intended to simplify the documentation of code interfaces.
+
+Declarator blocks that start with C<#|> attach to the declarator at the
+start of the line immediately after them (separated only by whitespace).
+Declarator blocks that start with C<#=> attach to the declarator
+declared at the start of the line immediately before them. In all other
+respects they act just like comments (i.e. they are themselves whitespace
+as far as ambient source code is concerned). This means multiple declarator
+blocks can be specified in a row and will all attach to the same declarator.
+
+For example:
+
+=begin code
+
+    #| Base class for comms necromancy hierarchy
+    class Magic::Necrotelecomnicon {
+        has $.elemental;  #= Source of all power
+        has $!true_name;  #  Source of all self-protection (not documented)
+
+        method cast(Spell $s)
+        #= Initiate a specified spell normally
+        #= (do not use for class 7 spells)
+        {
+            do_raw_magic($s);
+        }
+
+
+        method kast(  #= Initiate a specified spell abnormally
+            Spell $s     #= The spell to be abnormally initiated
+        ) {
+            do_raw_magic($s, :alternative);
+        }
+
+        #| This subroutine does the real work
+        sub do_raw_magic (
+            Spell $s,         #= Which spell to invoke
+            *%options         #= How to invoke it
+        ) {...}
+    }
+
+    sub fu (Any $bar)
+    #=[ This text stored in C<&fu.WHY>, not in C<$bar.WHY>,
+        (because C<sub fu> is the declarator
+         at the I<start> of the preceding line)
+      ]
+
+    multi sub baz(Int $count, Str $name)
+        #=[ This text stored in C<&baz:(Int,Str).WHY>
+            (i.e. the C<.WHY> of the variant, not of the entire multisub)
+          ]
+=end code
+
+A declarator can have both a leading and a trailing Pod comment, in
+which case they are concatenated with an intermediate newline when
+their object's C<.WHY> return value is stringified:
+
+   #| This is a special chainsaw
+   my SwissArmy $chainsaw    #= (It has a rocket launcher)
+
+   say $chainsaw.WHY;    # prints: This is a special chainsaw
+                         #         (It has a rocket launcher)
+
+The individual leading and trailing Pod comments can be retrieved
+via the returned Pod object's C<.leading> and C<.trailing> methods:
+
+   say $chainsaw.WHY.leading;    # prints: This is a special chainsaw
+
+   say $chainsaw.WHY.trailing;   # prints: (It has a rocket launcher)
+
+The Pod object representing each Declarator block is still appended to
+the current surrounding Pod object (e.g. to C<$=pod> at the top level).
+Each such block representation is an object of class
+C<Pod::Block::Declarator>, and has a C<.WHEREFORE> method that returns
+the code object or metaobject created by the declarator to which the
+documentation is attached.
+
+In other words, C<.WHY> and C<.WHEREFORE> are inverse operations:
+
+=code
+                            .WHY
+                 ----------------------------
+                |                            |
+                |                            v
+        -----------------            -----------------
+        | Declared code |            | Documentation |
+        |    object     |            |    object     |
+        -----------------            -----------------
+                ^                            |
+                |                            |
+                 ----------------------------
+                         .WHEREFORE
+
+
+
+When the L<default C<DOC INIT> block|#How Pod is parsed and processed>
+renders these Pod objects, it automatically includes information about
+the declarator as well. For instance, the earlier Necrotelecomnicon
+example might produce something like:
+
+=begin output
+      Name:  Magic::Necrotelecomnicon:
+
+      Desc:  Base class for comms necromancy hierarchy
+
+
+      Attrs:
+
+           .elemental       : Source of all power
+
+
+      Methods:
+
+           .cast(Spell $s)  : Initiate a specified spell normally
+
+           .kast(Spell $s)  : Initiate a specified spell abnormally
+
+
+      Subroutines:
+
+        do_raw_magic(       : This subroutine does the real work
+
+            Spell $s,         : Which spell to invoke
+
+            *%options         : How to invoke it
+
+        )
+
+=end output
+
+Note, however, that the exact rendering used for declarator blocks is
+implementation dependent, and may also be pre-empted explicitly by some
+L<C<DOC> configuration statement|#How Pod is parsed and processed>
+within the document, such as:
+
+    DOC use Pod::Markovian;
+
+or:
+
+=begin code
+    DOC INIT {
+        use Pod::Eiffelish::Long;
+
+        say eiffelish_long($=pod);
+
+        exit;
+    }
+=end code
+
+=head3 Block equivalence
+
+The first three block specifications (delimited, paragraph, and
+abbreviated) are treated identically by the underlying documentation
+model, so you can use whichever form is most convenient for a particular
+documentation task. In the descriptions that follow, the abbreviated
+form will generally be used, but should be read as standing for all
+three forms equally.
+
+For example, although L<#Headings> shows only:
+
+=begin code
+     =head1 Top Level Heading
+=end code
+
+this automatically implies that you could also write that block as:
+
+=begin code
+     =for head1
+     Top Level Heading
+=end code
+
+or:
+
+=begin code
+     =begin head1
+     Top Level Heading
+     =end head1
+=end code
+
+Declarator blocks are distinct from these three forms. They do not have
+typenames of their own, but rather take their meaning and identity from
+the declared object or type to which they are attached. In general, they
+are used specifically to describe that declarand.
+
+=head3 Standard configuration options
+
+Pod predefines a small number of standard configuration options that can be
+applied uniformly to any built-in block type. These include:
+
+=begin defn
+C<:nested>
+
+This option specifies that the block is to be nested within its current
+context. For example, nesting might be applied to block quotes, to textual
+examples, or to commentaries. In addition the L<C<=code>|#Code blocks>,
+L<C<=item>|#Lists>, L<C<=input>|#I/O blocks>, and L<C<=output>|#I/O blocks>
+blocks all have implicit nesting.
+
+Nesting of blocks is usually rendered by adding extra indentation to the
+block contents, but may also be indicated in other ways:
+by boxing the contents, by changing the font or size of the nested text,
+or even by folding the text (so long as a visible placeholder is provided).
+
+Occasionally it is desirable to nest content by more than one level:
+
+=begin code
+    =begin para :nested
+    =begin para :nested
+    =begin para :nested
+    "We're going deep, deep, I<deep> undercover!"
+    =end para
+    =end para
+    =end para
+=end code
+
+This can be simplified by giving the C<:nested> option a positive integer
+value:
+
+=begin code :allow<B>
+    =begin para B<:nested(3)>
+    "We're going deep, deep, I<deep> undercover!"
+    =end para
+=end code
+
+You can also give the option a value of zero, to defeat any implicit
+nesting that might normally be applied to a paragraph. For example, to
+specify a block of code that should appear I<without> its usual
+nesting:
+
+=begin code :allow<B V>
+    =comment Don't nest this code block in the usual way...
+    B<=begin code :nested(0)>
+
+                 1         2         3         4         5         6
+        123456789012345678901234567890123456789012345678901234567890
+        |------|-----------------------|---------------------------|
+          line        instruction                comments
+         number           code
+
+    V<=end code>
+=end code
+
+Note that C<:!nested> could also be used for this purpose:
+
+=begin code
+    =Z<>begin code :!nested
+=end code
+
+=end defn
+
+=begin defn
+C<:numbered>
+
+This option specifies that the block is to be numbered. The most common
+use of this option is to create L<numbered headings|#Numbered headings> and
+L<ordered lists|#Ordered lists>, but it can be applied to any block.
+
+The numbering conventions for headings and lists are specified in those
+sections, but it is up to individual renderers to decide how to display
+any numbering associated with other types of blocks.
+
+Note that numbering is never explicit; it is always implied by context.
+
+=end defn
+
+=begin defn
+C<:formatted>
+
+This option specifies that the contents of the block should be treated as if
+they had one or more L<formatting codes|#Formatting codes> placed around them.
+
+For example, instead of:
+
+=begin code
+    =for comment
+        The next para is both important and fundamental,
+        so doubly emphasize it...
+
+    =begin para
+    B<I<
+    Warning: Do not immerse in water. Do not expose to bright light.
+    Do not feed after midnight.
+    >>
+    =end para
+=end code
+
+you can just write:
+
+=begin code :allow<B>
+    =begin para B<:formatted<B I>>
+    Warning: Do not immerse in water. Do not expose to bright light.
+    Do not feed after midnight.
+    =end para
+=end code
+
+The internal representations of these two versions are exactly the same,
+except that the second one retains the C<:formatted> option information
+as part of the resulting block object.
+
+Like all formatting codes, codes applied via a C<:formatted> are
+inherently cumulative. For example, if the block itself is already
+inside a formatting code, that formatting code will still apply, in
+addition to the extra "basis" and "important" formatting specified by
+C<:formatted<B I>>.
+=end defn
+
+=begin defn
+C<:like>
+
+This option specifies that a block or config has the same formatting
+properties as the type named by its value. This is useful for creating
+related L<configurations|#Block pre-configuration> or for making
+user-defined synonyms for existing types. For example:
+
+=begin code
+    =config head2  :like<head1> :formatted<I>
+
+    =config Subhead :like<head2>
+=end code
+
+=end defn
+
+=begin defn
+C<:allow>
+
+This option expects a list of formatting codes that are to be recognized
+within any C<V<>> codes that appear in (or are implicitly applied to)
+the current block. The option is most often used on C<=code> blocks to
+allow mark-up within those otherwise verbatim blocks, though it can be
+used in I<any> block that contains verbatim text. See L<#Formatting
+within code blocks>.
+
+=end defn
+
+=begin defn
+C<:margin>
+
+This option specifies a character that indicates the left margin of the
+contents of the block. Normally this left margin is determined by the column
+at which the C<=> of the opening block-delimiter occurs. For example:
+
+=begin code
+    =head1 Indenting Pod blocks
+
+        =begin para
+        This text is flush with the (virtual) left margin of
+        the Pod block because that margin is implicitly specified
+        by the C<=> of the C<=begin>
+        =end para
+=end code
+
+However, by using the C<:margin> option it is possible to specify a
+character that acts like an explicit margin when it occurs as the first
+non-whitespace character on any line within the block. For example:
+
+=begin code
+    =head1 Indenting Pod blocks
+
+        =begin para :margin<|>
+            |This text is flush with the (virtual) left margin of
+            |the Pod block because that margin is explicitly marked
+            |by the C<|>, as specified by the block's C<:margin<|>> option.
+        =end para
+=end code
+
+The virtual margin can even be to the left of the opening delimiter, which can
+be convenient to guide subsequent indentations. For example:
+
+=begin code
+       sub foo {
+
+           V<=begin> pod :margin<|>
+           |=head1 Hey Look: Indented Pod!
+           |
+           |You can indent Pod in Perl 6
+           |which makes code look cleaner
+           |when documentation is interspersed
+           |
+           |     my $this is Code;
+           |
+           |=end pod
+
+           ...
+       }
+=end code
+
+When a C<:margin> option is used, each subsequent line (until the
+corresponding closing delimiter is encountered) simply has any text matching
+C</^^ \s* $margin_char/> automatically removed. This may include a line that
+then becomes the closing delimiter, as in the above example.
+
+Any line from which such a margin marker is removed automatically resets
+the implicit margin for subsequent lines of the block, setting it to the
+length of the "marginalized" indent that was just removed. This implicit
+margin is then used until the next line with an explicit margin marker
+is encountered, or the block terminates.
+
+=end defn
+
+=end pod

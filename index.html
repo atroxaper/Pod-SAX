@@ -6,7 +6,7 @@
 </head>
 <body class="pod" id="___top">
 <h1>Synopsis 26 - Documentation</h1>
-<nav class="indexgroup"><ol class="indexList indexList1"><li class="indexItem indexItem1"><a href="#Pod">Pod</a></li><ol class="indexList indexList2"><li class="indexItem indexItem2"><a href="#General_syntactic_structure">General syntactic structure</a></li><li class="indexItem indexItem2"><a href="#Pod_blocks">Pod blocks</a></li><ol class="indexList indexList3"><li class="indexItem indexItem3"><a href="#Delimited_blocks">Delimited blocks</a></li><li class="indexItem indexItem3"><a href="#Paragraph_blocks">Paragraph blocks</a></li><li class="indexItem indexItem3"><a href="#Abbreviated_blocks">Abbreviated blocks</a></li><li class="indexItem indexItem3"><a href="#Declarator_blocks">Declarator blocks</a></li><li class="indexItem indexItem3"><a href="#Block_equivalence">Block equivalence</a></li></ol></ol></ol></nav><section>
+<nav class="indexgroup"><ol class="indexList indexList1"><li class="indexItem indexItem1"><a href="#Pod">Pod</a></li><ol class="indexList indexList2"><li class="indexItem indexItem2"><a href="#General_syntactic_structure">General syntactic structure</a></li><li class="indexItem indexItem2"><a href="#Pod_blocks">Pod blocks</a></li><ol class="indexList indexList3"><li class="indexItem indexItem3"><a href="#Delimited_blocks">Delimited blocks</a></li><li class="indexItem indexItem3"><a href="#Paragraph_blocks">Paragraph blocks</a></li><li class="indexItem indexItem3"><a href="#Abbreviated_blocks">Abbreviated blocks</a></li><li class="indexItem indexItem3"><a href="#Declarator_blocks">Declarator blocks</a></li><li class="indexItem indexItem3"><a href="#Block_equivalence">Block equivalence</a></li><li class="indexItem indexItem3"><a href="#Standard_configuration_options">Standard configuration options</a></li></ol></ol></ol></nav><section>
 <h1>AUTHOR</h1>
 <p>Damian Conway <<a href="mailto:damian@conway.org"><code>damian@conway.org</code></a>></p>
 </section>
@@ -243,7 +243,7 @@ my SwissArmy $chainsaw    #= (It has a rocket launcher)</pre><pre>say $chainsaw.
                  ----------------------------
                          .WHEREFORE
 </pre><p>When the <a href="#How_Pod_is_parsed_and_processed">default <code>DOC INIT</code> block</a> renders these Pod objects, it automatically includes information about the declarator as well. For instance, the earlier Necrotelecomnicon example might produce something like:</p>
-<samp>Name: Magic::Necrotelecomnicon:<br>Desc: Base class for comms necromancy hierarchy<br>Attrs:<br>.elemental : Source of all power<br>Methods:<br>.cast(Spell $s) : Initiate a specified spell normally<br>.kast(Spell $s) : Initiate a specified spell abnormally<br>Subroutines:<br>do_raw_magic( : This subroutine does the real work<br>Spell $s, : Which spell to invoke<br>*%options : How to invoke it<br>)<br></samp><p>Note, however, that the exact rendering used for declarator blocks is implementation dependent, and may also be pre-empted explicitly by some <a href="#How_Pod_is_parsed_and_processed"><code>DOC</code> configuration statement</a> within the document, such as:</p>
+<samp>Name: Magic::Necrotelecomnicon:</br>Desc: Base class for comms necromancy hierarchy</br>Attrs:</br>.elemental : Source of all power</br>Methods:</br>.cast(Spell $s) : Initiate a specified spell normally</br>.kast(Spell $s) : Initiate a specified spell abnormally</br>Subroutines:</br>do_raw_magic( : This subroutine does the real work</br>Spell $s, : Which spell to invoke</br>*%options : How to invoke it</br>)</br></samp><p>Note, however, that the exact rendering used for declarator blocks is implementation dependent, and may also be pre-empted explicitly by some <a href="#How_Pod_is_parsed_and_processed"><code>DOC</code> configuration statement</a> within the document, such as:</p>
 <pre>DOC use Pod::Markovian;</pre><p>or:</p>
 <pre>    DOC INIT {
         use Pod::Eiffelish::Long;
@@ -263,6 +263,103 @@ my SwissArmy $chainsaw    #= (It has a rocket launcher)</pre><pre>say $chainsaw.
      Top Level Heading
      =end head1
 </pre><p>Declarator blocks are distinct from these three forms. They do not have typenames of their own, but rather take their meaning and identity from the declared object or type to which they are attached. In general, they are used specifically to describe that declarand.</p>
+<h3 id="Standard_configuration_options"><a class="u" href="#___top" title="go to top document">Standard configuration options</a></h3><p>Pod predefines a small number of standard configuration options that can be applied uniformly to any built-in block type. These include:</p>
+<p><code>:nested</code></p>
+<p>This option specifies that the block is to be nested within its current context. For example, nesting might be applied to block quotes, to textual examples, or to commentaries. In addition the <a href="#Code_blocks"><code>=code</code></a>, <a href="#Lists"><code>=item</code></a>, <a href="#I/O_blocks"><code>=input</code></a>, and <a href="#I/O_blocks"><code>=output</code></a> blocks all have implicit nesting.</p>
+<p>Nesting of blocks is usually rendered by adding extra indentation to the block contents, but may also be indicated in other ways: by boxing the contents, by changing the font or size of the nested text, or even by folding the text (so long as a visible placeholder is provided).</p>
+<p>Occasionally it is desirable to nest content by more than one level:</p>
+<pre>    =begin para :nested
+    =begin para :nested
+    =begin para :nested
+    &quot;We&#39;re going deep, deep, I&lt;deep&gt; undercover!&quot;
+    =end para
+    =end para
+    =end para
+</pre><p>This can be simplified by giving the <code>:nested</code> option a positive integer value:</p>
+<pre>    =begin para <strong>:nested(3)</strong>
+    &quot;We&#39;re going deep, deep, I&lt;deep&gt; undercover!&quot;
+    =end para
+</pre><p>You can also give the option a value of zero, to defeat any implicit nesting that might normally be applied to a paragraph. For example, to specify a block of code that should appear 
+<em>without</em> its usual nesting:</p>
+<pre>    =comment Don&#39;t nest this code block in the usual way...
+    <strong>=begin code :nested(0)</strong>
+
+                 1         2         3         4         5         6
+        123456789012345678901234567890123456789012345678901234567890
+        |------|-----------------------|---------------------------|
+          line        instruction                comments
+         number           code
+
+    =end code
+</pre><p>Note that <code>:!nested</code> could also be used for this purpose:</p>
+<pre>    =Z&lt;&gt;begin code :!nested
+</pre><p><code>:numbered</code></p>
+<p>This option specifies that the block is to be numbered. The most common use of this option is to create <a href="#Numbered_headings">numbered headings</a> and <a href="#Ordered_lists">ordered lists</a>, but it can be applied to any block.</p>
+<p>The numbering conventions for headings and lists are specified in those sections, but it is up to individual renderers to decide how to display any numbering associated with other types of blocks.</p>
+<p>Note that numbering is never explicit; it is always implied by context.</p>
+<p><code>:formatted</code></p>
+<p>This option specifies that the contents of the block should be treated as if they had one or more <a href="#Formatting_codes">formatting codes</a> placed around them.</p>
+<p>For example, instead of:</p>
+<pre>    =for comment
+        The next para is both important and fundamental,
+        so doubly emphasize it...
+
+    =begin para
+    B&lt;I&lt;
+    Warning: Do not immerse in water. Do not expose to bright light.
+    Do not feed after midnight.
+    &gt;&gt;
+    =end para
+</pre><p>you can just write:</p>
+<pre>    =begin para <strong>:formatted<B I></strong>
+    Warning: Do not immerse in water. Do not expose to bright light.
+    Do not feed after midnight.
+    =end para
+</pre><p>The internal representations of these two versions are exactly the same, except that the second one retains the <code>:formatted</code> option information as part of the resulting block object.</p>
+<p>Like all formatting codes, codes applied via a <code>:formatted</code> are inherently cumulative. For example, if the block itself is already inside a formatting code, that formatting code will still apply, in addition to the extra "basis" and "important" formatting specified by <code>:formatted<B I></code>.</p>
+<p><code>:like</code></p>
+<p>This option specifies that a block or config has the same formatting properties as the type named by its value. This is useful for creating related <a href="#Block_pre-configuration">configurations</a> or for making user-defined synonyms for existing types. For example:</p>
+<pre>    =config head2  :like&lt;head1&gt; :formatted&lt;I&gt;
+
+    =config Subhead :like&lt;head2&gt;
+</pre><p><code>:allow</code></p>
+<p>This option expects a list of formatting codes that are to be recognized within any <code>V<></code> codes that appear in (or are implicitly applied to) the current block. The option is most often used on <code>=code</code> blocks to allow mark-up within those otherwise verbatim blocks, though it can be used in 
+<em>any</em> block that contains verbatim text. See <a href="#Formatting_within_code_blocks">#Formatting within code blocks</a>.</p>
+<p><code>:margin</code></p>
+<p>This option specifies a character that indicates the left margin of the contents of the block. Normally this left margin is determined by the column at which the <code>=</code> of the opening block-delimiter occurs. For example:</p>
+<pre>    =head1 Indenting Pod blocks
+
+        =begin para
+        This text is flush with the (virtual) left margin of
+        the Pod block because that margin is implicitly specified
+        by the C&lt;=&gt; of the C&lt;=begin&gt;
+        =end para
+</pre><p>However, by using the <code>:margin</code> option it is possible to specify a character that acts like an explicit margin when it occurs as the first non-whitespace character on any line within the block. For example:</p>
+<pre>    =head1 Indenting Pod blocks
+
+        =begin para :margin&lt;|&gt;
+            |This text is flush with the (virtual) left margin of
+            |the Pod block because that margin is explicitly marked
+            |by the C&lt;|&gt;, as specified by the block&#39;s C&lt;:margin&lt;|&gt;&gt; option.
+        =end para
+</pre><p>The virtual margin can even be to the left of the opening delimiter, which can be convenient to guide subsequent indentations. For example:</p>
+<pre>       sub foo {
+
+           V&lt;=begin&gt; pod :margin&lt;|&gt;
+           |=head1 Hey Look: Indented Pod!
+           |
+           |You can indent Pod in Perl 6
+           |which makes code look cleaner
+           |when documentation is interspersed
+           |
+           |     my $this is Code;
+           |
+           |=end pod
+
+           ...
+       }
+</pre><p>When a <code>:margin</code> option is used, each subsequent line (until the corresponding closing delimiter is encountered) simply has any text matching <code>/^^ \s* $margin_char/</code> automatically removed. This may include a line that then becomes the closing delimiter, as in the above example.</p>
+<p>Any line from which such a margin marker is removed automatically resets the implicit margin for subsequent lines of the block, setting it to the length of the "marginalized" indent that was just removed. This implicit margin is then used until the next line with an explicit margin marker is encountered, or the block terminates.</p>
 </body>
 </html>
 

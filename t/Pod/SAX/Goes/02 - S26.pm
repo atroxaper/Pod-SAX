@@ -11,7 +11,7 @@ plan 1;
 # Test by eyes #
 my Reformer $reformer = make-reformer;
 ok $reformer, 'make caller works well';
-my $pod = get-pod slurp('../../../../in.txt'.path);
+my $pod = get-pod slurp('../../../../index.txt'.path);
 $reformer.reform($pod);
 my $result = $reformer.get-result;
 say "draft is:\n{$result}\n" ~ '-' x 30;
