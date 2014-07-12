@@ -2,9 +2,11 @@
 <html>
 <head>
 <title>Synopsis 26 - Documentation</title>
+<link href="index.css" type="text/css" rel="stylesheet">
 </head>
 <body class="pod" id="___top">
-<h1>Synopsis 26 - Documentation</h1><nav class="indexgroup"><ol class="indexList indexList1"><li class="indexItem indexItem1"><a href="#Pod">Pod</a></li><ol class="indexList indexList2"><li class="indexItem indexItem2"><a href="#General_syntactic_structure">General syntactic structure</a></li><li class="indexItem indexItem2"><a href="#Pod_blocks">Pod blocks</a></li><ol class="indexList indexList3"><li class="indexItem indexItem3"><a href="#Delimited_blocks">Delimited blocks</a></li></ol></ol></ol></nav><section>
+<h1>Synopsis 26 - Documentation</h1>
+<nav class="indexgroup"><ol class="indexList indexList1"><li class="indexItem indexItem1"><a href="#Pod">Pod</a></li><ol class="indexList indexList2"><li class="indexItem indexItem2"><a href="#General_syntactic_structure">General syntactic structure</a></li><li class="indexItem indexItem2"><a href="#Pod_blocks">Pod blocks</a></li><ol class="indexList indexList3"><li class="indexItem indexItem3"><a href="#Delimited_blocks">Delimited blocks</a></li><li class="indexItem indexItem3"><a href="#Paragraph_blocks">Paragraph blocks</a></li><li class="indexItem indexItem3"><a href="#Abbreviated_blocks">Abbreviated blocks</a></li><li class="indexItem indexItem3"><a href="#Declarator_blocks">Declarator blocks</a></li><li class="indexItem indexItem3"><a href="#Block_equivalence">Block equivalence</a></li></ol></ol></ol></nav><section>
 <h1>AUTHOR</h1>
 <p>Damian Conway <<a href="mailto:damian@conway.org"><code>damian@conway.org</code></a>></p>
 </section>
@@ -132,6 +134,139 @@
         =end Contact
 </pre><p>Note that no blank lines are required around the directives; blank lines within the contents are always treated as part of the contents. This is a universal feature of Pod.</p>
 <p>Note also that in the following specifications, a "blank line" is a line that is either empty or that contains only whitespace characters. That is, a blank line matches the Perl 6 pattern: <code>/^^ \h* $$/</code>. Pod uses blank lines as delimiters, rather than empty lines, to minimize unpleasant surprises when stray spaces or tabs mysteriously turn up in hitherto empty lines.</p>
+<h3 id="Paragraph_blocks"><a class="u" href="#___top" title="go to top document">Paragraph blocks</a></h3><p>Paragraph blocks are introduced by a <code>=for</code> marker and terminated by the next Pod directive or the first blank line (which is 
+<em>not</em> considered to be part of the block's contents). The <code>=for</code> marker is followed by the name of the block and optional configuration information. The general syntax is:</p>
+<pre>     =for <var>BLOCK_TYPE</var>  <var>OPTIONAL CONFIG INFO</var>
+     =                <var>OPTIONAL EXTRA CONFIG INFO</var>
+     <var>BLOCK DATA</var>
+</pre><p>For example:</p>
+<pre>     =for table  :caption&lt;Table of Contents&gt;
+         Constants           1
+         Variables           10
+         Subroutines         33
+         Everything else     57
+
+        =for Name  :required
+        =          :width(50)
+        The applicant&#39;s full name
+
+     =for Contact  :optional
+        The applicant&#39;s contact details
+
+</pre><h3 id="Abbreviated_blocks"><a class="u" href="#___top" title="go to top document">Abbreviated blocks</a></h3><p>Abbreviated blocks are introduced by an <code>'='</code> sign in the first column, which is followed immediately by the typename of the block. The rest of the line is treated as block data, rather than as configuration. The content terminates at the next Pod directive or the first blank line (which is not part of the block data). The general syntax is:</p>
+<pre>     =<var>BLOCK_TYPE</var>  <var>BLOCK DATA</var>
+     <var>MORE BLOCK DATA</var>
+
+</pre><p>For example:</p>
+<pre>     =table
+         Constants           1
+         Variables           10
+         Subroutines         33
+         Everything else     57
+
+        =Name  The applicant&#39;s full name
+     =Contact  The applicant&#39;s contact details
+
+</pre><p>Note that abbreviated blocks cannot specify configuration information. If configuration is required, use a <code>=for</code> or <code>=begin</code>/<code>=end</code> instead.</p>
+<h3 id="Declarator_blocks"><a class="u" href="#___top" title="go to top document">Declarator blocks</a></h3><p>The fourth form of Pod block differs from the first three in that it does not specify an explicit typename. Instead, it obtains its identity and purpose from the Perl 6 source code to which it is attached; specifically, from some nearby declarator.</p>
+<p>Declarator blocks are introduced by a special Perl comment: either <code>#=</code> or <code>#|</code>, which must be immediately followed by either by a space or an opening bracket. If followed by a space, the block is terminated by the end of line; if followed by one or more opening brackets, the block is terminated by the matching sequence of closing brackets.</p>
+<p>That is, declarator Pod blocks are syntactically like ordinary Perl 6 single-line comments and embedded comments. The general syntax is:</p>
+<pre>     #| <var>BLOCK DATA TO END OF LINE</var>
+
+     #|{ <var>BLOCK DATA</var>
+         <var>MORE BLOCK DATA</var>
+       }
+
+     #= <var>BLOCK DATA TO END OF LINE</var>
+
+     #={ <var>BLOCK DATA</var>
+         <var>MORE BLOCK DATA</var>
+       }
+
+</pre><p>except that the bracketed forms may use 
+<em>any</em> valid Perl 6 bracket delimiter (including repeated opening brackets), as described in Synopsis 2.</p>
+<p>Declarator Pod blocks must either precede or immediately follow a valid Perl 6 declarator, and are then said to be "attached" to it. They are primarily intended to simplify the documentation of code interfaces.</p>
+<p>Declarator blocks that start with <code>#|</code> attach to the declarator at the start of the line immediately after them (separated only by whitespace). Declarator blocks that start with <code>#=</code> attach to the declarator declared at the start of the line immediately before them. In all other respects they act just like comments (i.e. they are themselves whitespace as far as ambient source code is concerned). This means multiple declarator blocks can be specified in a row and will all attach to the same declarator.</p>
+<p>For example:</p>
+<pre>    #| Base class for comms necromancy hierarchy
+    class Magic::Necrotelecomnicon {
+        has $.elemental;  #= Source of all power
+        has $!true_name;  #  Source of all self-protection (not documented)
+
+        method cast(Spell $s)
+        #= Initiate a specified spell normally
+        #= (do not use for class 7 spells)
+        {
+            do_raw_magic($s);
+        }
+
+
+        method kast(  #= Initiate a specified spell abnormally
+            Spell $s     #= The spell to be abnormally initiated
+        ) {
+            do_raw_magic($s, :alternative);
+        }
+
+        #| This subroutine does the real work
+        sub do_raw_magic (
+            Spell $s,         #= Which spell to invoke
+            *%options         #= How to invoke it
+        ) {...}
+    }
+
+    sub fu (Any $bar)
+    #=[ This text stored in C&lt;&amp;fu.WHY&gt;, not in C&lt;$bar.WHY&gt;,
+        (because C&lt;sub fu&gt; is the declarator
+         at the I&lt;start&gt; of the preceding line)
+      ]
+
+    multi sub baz(Int $count, Str $name)
+        #=[ This text stored in C&lt;&amp;baz:(Int,Str).WHY&gt;
+            (i.e. the C&lt;.WHY&gt; of the variant, not of the entire multisub)
+          ]
+</pre><p>A declarator can have both a leading and a trailing Pod comment, in which case they are concatenated with an intermediate newline when their object's <code>.WHY</code> return value is stringified:</p>
+<pre>#| This is a special chainsaw
+my SwissArmy $chainsaw    #= (It has a rocket launcher)</pre><pre>say $chainsaw.WHY;    # prints: This is a special chainsaw
+                      #         (It has a rocket launcher)</pre><p>The individual leading and trailing Pod comments can be retrieved via the returned Pod object's <code>.leading</code> and <code>.trailing</code> methods:</p>
+<pre>say $chainsaw.WHY.leading;    # prints: This is a special chainsaw</pre><pre>say $chainsaw.WHY.trailing;   # prints: (It has a rocket launcher)</pre><p>The Pod object representing each Declarator block is still appended to the current surrounding Pod object (e.g. to <code>$=pod</code> at the top level). Each such block representation is an object of class <code>Pod::Block::Declarator</code>, and has a <code>.WHEREFORE</code> method that returns the code object or metaobject created by the declarator to which the documentation is attached.</p>
+<p>In other words, <code>.WHY</code> and <code>.WHEREFORE</code> are inverse operations:</p>
+<pre>                            .WHY
+                 ----------------------------
+                |                            |
+                |                            v
+        -----------------            -----------------
+        | Declared code |            | Documentation |
+        |    object     |            |    object     |
+        -----------------            -----------------
+                ^                            |
+                |                            |
+                 ----------------------------
+                         .WHEREFORE
+</pre><p>When the <a href="#How_Pod_is_parsed_and_processed">default <code>DOC INIT</code> block</a> renders these Pod objects, it automatically includes information about the declarator as well. For instance, the earlier Necrotelecomnicon example might produce something like:</p>
+<p>Name: Magic::Necrotelecomnicon: Desc: Base class for comms necromancy hierarchy</p>
+<p>Attrs: .elemental : Source of all power</p>
+<p>Methods: .cast(Spell $s) : Initiate a specified spell normally .kast(Spell $s) : Initiate a specified spell abnormally</p>
+<p>Subroutines: do_raw_magic( : This subroutine does the real work Spell $s, : Which spell to invoke *%options : How to invoke it )</p>
+<p>Note, however, that the exact rendering used for declarator blocks is implementation dependent, and may also be pre-empted explicitly by some <a href="#How_Pod_is_parsed_and_processed"><code>DOC</code> configuration statement</a> within the document, such as:</p>
+<pre>DOC use Pod::Markovian;</pre><p>or:</p>
+<pre>    DOC INIT {
+        use Pod::Eiffelish::Long;
+
+        say eiffelish_long($=pod);
+
+        exit;
+    }
+</pre><h3 id="Block_equivalence"><a class="u" href="#___top" title="go to top document">Block equivalence</a></h3><p>The first three block specifications (delimited, paragraph, and abbreviated) are treated identically by the underlying documentation model, so you can use whichever form is most convenient for a particular documentation task. In the descriptions that follow, the abbreviated form will generally be used, but should be read as standing for all three forms equally.</p>
+<p>For example, although <a href="#Headings">#Headings</a> shows only:</p>
+<pre>     =head1 Top Level Heading
+</pre><p>this automatically implies that you could also write that block as:</p>
+<pre>     =for head1
+     Top Level Heading
+</pre><p>or:</p>
+<pre>     =begin head1
+     Top Level Heading
+     =end head1
+</pre><p>Declarator blocks are distinct from these three forms. They do not have typenames of their own, but rather take their meaning and identity from the declared object or type to which they are attached. In general, they are used specifically to describe that declarand.</p>
 </body>
 </html>
 

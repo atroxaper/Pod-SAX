@@ -1,0 +1,27 @@
+code {
+	background-color: rgb(153, 194, 255);
+	border-bottom-color: rgb(225, 225, 232);
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(225, 225, 232);
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-right-color: rgb(225, 225, 232);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-top-color: rgb(225, 225, 232);
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+	border-top-style: solid;
+	border-top-width: 1px;
+	padding-bottom: 1px;
+	padding-left: 2px;
+	padding-right: 2px;
+	padding-top: 1px;
+}
+
+samp {
+	font-family: "Terminus", "Courier", "Lucida Console", monospace
+}

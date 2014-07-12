@@ -45,6 +45,7 @@ module Pod::SAX::Goes::HTML {
 				@draft.push(
 					qq[<!doctype html>{$N}<html>{$N}<head>{$N}],
 					SimpleAnchor.new(:template(qq[<title><%=TITLE%></title>{$N}])),
+					qq[<link href="index.css" type="text/css" rel="stylesheet">{$N}],
 					qq[</head>{$N}<body class="pod" id="___top">{$N}]
 				);
 			},
@@ -65,7 +66,7 @@ module Pod::SAX::Goes::HTML {
 				%storage{'TITLE'} = $content;
 			},
 			stop => sub (:@draft) {
-				push @draft, q[</h1>];
+				push @draft, qq[</h1>{$N}];
 				# TOC should be after the title of page #
 				my $toc = CallbackAnchor.new(:callback(&render-toc), :priority(1));
 				push @draft, $toc;
