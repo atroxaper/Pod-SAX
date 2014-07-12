@@ -8,6 +8,9 @@ use Pod::SAX::Common;
 
 plan 24;
 
+# some consts #
+my $heading-to-top = q[<a class="u" href="#___top" title="go to top document">];
+
 sub rm-n($str) {
 	return $str.subst(/\n/, '', :g);
 }
@@ -56,9 +59,9 @@ sub get-test-result(Str $source --> Str) {
 		Heading11
 		END
 	is get-test-result($pod-str),
-		q[<h1 id="Heading1">Heading1</h1>] ~
-		q[<h2 id="Heading2">Heading2</h2>] ~
-		q[<h1 id="Heading11">Heading11</h1>], 'just headings';
+		qq[<h1 id="Heading1">{$heading-to-top}Heading1</a></h1>] ~
+		qq[<h2 id="Heading2">{$heading-to-top}Heading2</a></h2>] ~
+		qq[<h1 id="Heading11">{$heading-to-top}Heading11</a></h1>], 'just headings';
 }
 
 {# links
@@ -164,19 +167,19 @@ sub get-test-result(Str $source --> Str) {
 		END
 	my $result = get-test-result($pod-str);
 	$result ~~ m/'<h1>This Title</h1>'/;
-	my $expect = q:to[END];
+	my $expect = qq:to[END];
 		<nav class="indexgroup">
 		<ol class="indexList indexList1">
-		<li class="indexItem indexItem1"><a href="Heading 1">Heading 1</a></li>
+		<li class="indexItem indexItem1"><a href="#Heading 1">Heading 1</a></li>
 		<ol class="indexList indexList2">
-		<li class="indexItem indexItem2"><a href="Heading 2">Heading 2</a></li>
+		<li class="indexItem indexItem2"><a href="#Heading 2">Heading 2</a></li>
 		</ol>
-		<li class="indexItem indexItem1"><a href="Heading 11">Heading 11</a></li>
+		<li class="indexItem indexItem1"><a href="#Heading 11">Heading 11</a></li>
 		</ol>
 		</nav>
-		<h1 id="Heading 1">Heading 1</h1>
-		<h2 id="Heading 2">Heading 2</h2>
-		<h1 id="Heading 11">Heading 11</h1>
+		<h1 id="Heading 1">{$heading-to-top}Heading 1</a></h1>
+		<h2 id="Heading 2">{$heading-to-top}Heading 2</a></h2>
+		<h1 id="Heading 11">{$heading-to-top}Heading 11</a></h1>
 		</body></html>
 		END
 

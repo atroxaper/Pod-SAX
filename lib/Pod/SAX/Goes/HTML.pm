@@ -75,7 +75,7 @@ module Pod::SAX::Goes::HTML {
 		sub (:@history where {@history.&under-type(Pod::Heading)}) { True; } => {
 			start => sub { True; },
 			in => sub (:$content, :@draft, :%storage) {
-				push @draft, $content;
+				push @draft, qq[<a class="u" href="#___top" title="go to top document">{$content}</a>];
 			},
 			stop => sub { True; }
 		},
