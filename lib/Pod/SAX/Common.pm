@@ -31,8 +31,8 @@ module Pod::SAX::Common {
 		}
 	}
 
-	sub filter-args($sub,  %args) is export {
-		my @param-names = $sub.signature.params.map: *.name.substr(1);
+	sub filter-args(Signature $sig,  %args) is export {
+		my @param-names = $sig.params.map: *.name.substr(1);
 		my %result;
 		for %args.keys -> $key {
 			%result{$key} = %args{$key} if $key eq any(@param-names);
