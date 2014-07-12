@@ -101,6 +101,7 @@ sub get-test-result(Str $source --> Str) {
 
 		=end para
 		END
+#?rakudo.parrot skip 'have SIGSEGV [#122274]'
 	is get-test-result($pod-str),
 		q[<p><dfn id="_defn_term-one">term-one</dfn>] ~
 		q[ <a href="#_defn_term-one">defn:term-one</a>] ~

@@ -73,8 +73,8 @@ module Pod::SAX::Anchors {
 	#| Initialize Anchor object some dates by is rw fields ob object.
 	#| Now we can insert only current %storage and @draft.
 	sub init-anchor($anchor, %args) is export {
-		for $anchor.^attributes.grep({.rw}) {
-			my $name = $_.name.substr(2);
+		for $anchor.^attributes.grep({.has-accessor && (!(.readonly))}) -> $attr {
+			my $name = $attr.name.substr(2);
 			if ($name ~~ any(%args.keys)) {
 				if ($name eq 'draft') {
 					$anchor."{$name}"() = %args{$name};
