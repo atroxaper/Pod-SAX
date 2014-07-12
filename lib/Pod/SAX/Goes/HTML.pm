@@ -56,6 +56,10 @@ module Pod::SAX::Goes::HTML {
 		sub (:$name where {$name ~~ any('VERSION', 'AUTHOR')}) { True; } => {
 			start => sub (:@draft, :$name) { push @draft, qq[<section>{$N}<h1>{$name}</h1>{$N}]; },
 			stop =>  sub (:@draft) { push @draft, qq[</section>{$N}]; }
+		},
+		sub (:$name where {$name eq 'output'}) { True; } => {
+			start => sub (:@draft) { push @draft, q[<samp>]},
+			stop => sub (:@draft) { push @draft, q[</samp>]}
 		};
 	my @para =
 		# that para is content of =TITLE #
@@ -79,6 +83,12 @@ module Pod::SAX::Goes::HTML {
 				push @draft, qq[<a class="u" href="#___top" title="go to top document">{$content}</a>];
 			},
 			stop => sub { True; }
+		},
+		# that para is content of =begin output #
+		sub (:@history where {@history.&under-name('output')}) { True;} => {
+			start => sub { True; },
+			in => sub (:$content, :@draft) { push @draft, $content },
+			stop => sub (:@draft) { push @draft, q[</br>]; }
 		},
 		# General Paragraph #
 		sub { True; } => {

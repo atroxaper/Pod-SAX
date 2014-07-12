@@ -34,6 +34,7 @@ sub get-test-result(Str $source --> Str) {
 	is get-test-result($pod-str),
 		q[<!doctype html><html><head>] ~
 		q[<title>This Title</title>] ~
+		q[<link href="index.css" type="text/css" rel="stylesheet">] ~
 		q[</head><body class="pod" id="___top">] ~
 		q[<h1>This Title</h1>] ~
 		q[</body></html>], 'just pod';
@@ -184,5 +185,29 @@ sub get-test-result(Str $source --> Str) {
 		END
 
 	is $/.postmatch, $expect.&rm-n, 'table of contents';
+}
+
+{#| =begin output test
+	my $pod-str = qq:to[END];
+		=begin output
+		Name: Magic::Necrotelecomnicon:
+
+		Desc: Base class for comms necromancy hierarchy
+
+		Attrs:
+
+			.elemental : Source of all power
+
+		=end output
+		END
+	my $expect = qq:to[END];
+		<samp>
+		Name: Magic::Necrotelecomnicon:</br>
+		Desc: Base class for comms necromancy hierarchy</br>
+		Attrs:</br>
+		.elemental : Source of all power</br>
+		</samp>
+		END
+	is get-test-result($pod-str), $expect.&rm-n, '=output';
 }
 

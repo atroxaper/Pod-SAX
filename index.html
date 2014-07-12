@@ -243,11 +243,7 @@ my SwissArmy $chainsaw    #= (It has a rocket launcher)</pre><pre>say $chainsaw.
                  ----------------------------
                          .WHEREFORE
 </pre><p>When the <a href="#How_Pod_is_parsed_and_processed">default <code>DOC INIT</code> block</a> renders these Pod objects, it automatically includes information about the declarator as well. For instance, the earlier Necrotelecomnicon example might produce something like:</p>
-<p>Name: Magic::Necrotelecomnicon: Desc: Base class for comms necromancy hierarchy</p>
-<p>Attrs: .elemental : Source of all power</p>
-<p>Methods: .cast(Spell $s) : Initiate a specified spell normally .kast(Spell $s) : Initiate a specified spell abnormally</p>
-<p>Subroutines: do_raw_magic( : This subroutine does the real work Spell $s, : Which spell to invoke *%options : How to invoke it )</p>
-<p>Note, however, that the exact rendering used for declarator blocks is implementation dependent, and may also be pre-empted explicitly by some <a href="#How_Pod_is_parsed_and_processed"><code>DOC</code> configuration statement</a> within the document, such as:</p>
+<samp>Name: Magic::Necrotelecomnicon:<br>Desc: Base class for comms necromancy hierarchy<br>Attrs:<br>.elemental : Source of all power<br>Methods:<br>.cast(Spell $s) : Initiate a specified spell normally<br>.kast(Spell $s) : Initiate a specified spell abnormally<br>Subroutines:<br>do_raw_magic( : This subroutine does the real work<br>Spell $s, : Which spell to invoke<br>*%options : How to invoke it<br>)<br></samp><p>Note, however, that the exact rendering used for declarator blocks is implementation dependent, and may also be pre-empted explicitly by some <a href="#How_Pod_is_parsed_and_processed"><code>DOC</code> configuration statement</a> within the document, such as:</p>
 <pre>DOC use Pod::Markovian;</pre><p>or:</p>
 <pre>    DOC INIT {
         use Pod::Eiffelish::Long;
