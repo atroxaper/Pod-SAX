@@ -31,25 +31,18 @@
 </section>
 <h1 id="Pod"><a class="u" href="#___top" title="go to top document">Pod</a></h1><p>
 <dfn id="_defn_Pod">Pod</dfn> is an easy-to-use markup language with a simple, consistent underlying document object model. Pod can be used for writing language documentation, for documenting programs and modules, as well as for other types of document composition.</p>
-<p>Pod is an evolution of Perl 5's <a href="doc:perlpod">
-<em>Plain Ol' Documentation</em></a> (POD) markup. Compared to POD, Perl 6's Pod is much more uniform, somewhat more compact, and considerably more expressive. The Pod dialect also differs in that it is a purely descriptive mark-up notation, with no presentational components.</p>
+<p>Pod is an evolution of Perl 5's <a href="doc:perlpod"><em>Plain Ol&#39; Documentation</em></a> (POD) markup. Compared to POD, Perl 6's Pod is much more uniform, somewhat more compact, and considerably more expressive. The Pod dialect also differs in that it is a purely descriptive mark-up notation, with no presentational components.</p>
 <h2 id="General_syntactic_structure"><a class="u" href="#___top" title="go to top document">General syntactic structure</a></h2><p>Pod documents are specified using 
 <dfn id="_defn_directives">directives</dfn>, which are used to declare configuration information and to delimit blocks of textual content. All Pod directives are considered to be special types of comments in Perl 6.</p>
 <p>Every directive starts either with an equals sign (<code>=</code>) followed immediately by an identifier , or with a <code>#=</code> or <code>#|</code> followed immediately by whitespace or an opening bracket.</p>
 <p>Directives that start with <code>=</code> can be indented like the code they interleave, but their initial <code>=</code> must still be the first non-whitespace character on their line. Directives that start with <code>#=</code> or <code>#|</code> can be placed anywhere that a Perl 6 comment can appear, though they are meaningful only in a subset of those places; see <a href="#Declarator_blocks">#Declarator blocks</a>.</p>
-<p>An indented Pod block is considered to have a 
-<em>virtual left margin</em>, determined by the indentation of its opening delimiter.</p>
+<p>An indented Pod block is considered to have a <em>virtual left margin</em>, determined by the indentation of its opening delimiter.</p>
 <p>In other words, if a directive is indented from the left margin, the column at which the first character of its opening delimiter appears is thereafter considered the first column of the entire block's contents.</p>
 <p>As with Perl 6 heredocs, the virtual margin treats leading tabs as aligning to tabstops spaced every <code>($?TABSTOP // 8)</code> characters.</p>
 <h2 id="Pod_blocks"><a class="u" href="#___top" title="go to top document">Pod blocks</a></h2><p>The content of a document is specified within one or more 
 <dfn id="_defn_blocks">blocks</dfn>. Every Pod block may be declared in any of four forms:</p>
-<p><a href="#Delimited_blocks">
-<em>delimited style</em></a>, <a href="#Paragraph_blocks">
-<em>paragraph style</em></a>, <a href="#Abbreviated_blocks">
-<em>abbreviated style</em></a>, or <a href="#Declarator_blocks">
-<em>declarator style</em></a>. The first three forms are all equivalent; the fourth is distinct.</p>
-<p>Anything in a document that is neither a Pod directive nor contained within a Pod block is treated as "ambient" material. Typically this would be the source code of the program that the Pod is documenting. Pod parsers still parse this text into the internal representation of the file, representing it as a <code>Pod::Block::Ambient</code> block. Renderers will 
-<em>usually</em> ignore such blocks, but see <a href="#Aliases">#Aliases</a>.</p>
+<p><a href="#Delimited_blocks"><em>delimited style</em></a>, <a href="#Paragraph_blocks"><em>paragraph style</em></a>, <a href="#Abbreviated_blocks"><em>abbreviated style</em></a>, or <a href="#Declarator_blocks"><em>declarator style</em></a>. The first three forms are all equivalent; the fourth is distinct.</p>
+<p>Anything in a document that is neither a Pod directive nor contained within a Pod block is treated as "ambient" material. Typically this would be the source code of the program that the Pod is documenting. Pod parsers still parse this text into the internal representation of the file, representing it as a <code>Pod::Block::Ambient</code> block. Renderers will <em>usually</em> ignore such blocks, but see <a href="#Aliases">#Aliases</a>.</p>
 <p>In Perl 5's POD format, once a POD directive is encountered, the parser considers everything that follows to be POD, until an explicit <code>=cut</code> directive is encountered, at which point the parser flips back to parsing ambient source code. The Perl 6 Pod format is different. All Pod directives have a defined terminator and the Pod parser always reverts to "ambient" at the end of each Pod directive or block. To cause the parser to remain in Pod mode, you must enclose the desired Pod region in a <code>pod</code> block:</p>
 <pre>    <strong>=begin pod</strong>
 
@@ -134,8 +127,7 @@
         =end Contact
 </pre><p>Note that no blank lines are required around the directives; blank lines within the contents are always treated as part of the contents. This is a universal feature of Pod.</p>
 <p>Note also that in the following specifications, a "blank line" is a line that is either empty or that contains only whitespace characters. That is, a blank line matches the Perl 6 pattern: <code>/^^ \h* $$/</code>. Pod uses blank lines as delimiters, rather than empty lines, to minimize unpleasant surprises when stray spaces or tabs mysteriously turn up in hitherto empty lines.</p>
-<h3 id="Paragraph_blocks"><a class="u" href="#___top" title="go to top document">Paragraph blocks</a></h3><p>Paragraph blocks are introduced by a <code>=for</code> marker and terminated by the next Pod directive or the first blank line (which is 
-<em>not</em> considered to be part of the block's contents). The <code>=for</code> marker is followed by the name of the block and optional configuration information. The general syntax is:</p>
+<h3 id="Paragraph_blocks"><a class="u" href="#___top" title="go to top document">Paragraph blocks</a></h3><p>Paragraph blocks are introduced by a <code>=for</code> marker and terminated by the next Pod directive or the first blank line (which is <em>not</em> considered to be part of the block's contents). The <code>=for</code> marker is followed by the name of the block and optional configuration information. The general syntax is:</p>
 <pre>     =for <var>BLOCK_TYPE</var>  <var>OPTIONAL CONFIG INFO</var>
      =                <var>OPTIONAL EXTRA CONFIG INFO</var>
      <var>BLOCK DATA</var>
@@ -153,7 +145,7 @@
      =for Contact  :optional
         The applicant&#39;s contact details
 
-</pre><h3 id="Abbreviated_blocks"><a class="u" href="#___top" title="go to top document">Abbreviated blocks</a></h3><p>Abbreviated blocks are introduced by an <code>'='</code> sign in the first column, which is followed immediately by the typename of the block. The rest of the line is treated as block data, rather than as configuration. The content terminates at the next Pod directive or the first blank line (which is not part of the block data). The general syntax is:</p>
+</pre><h3 id="Abbreviated_blocks"><a class="u" href="#___top" title="go to top document">Abbreviated blocks</a></h3><p>Abbreviated blocks are introduced by an <code>&#39;=&#39;</code> sign in the first column, which is followed immediately by the typename of the block. The rest of the line is treated as block data, rather than as configuration. The content terminates at the next Pod directive or the first blank line (which is not part of the block data). The general syntax is:</p>
 <pre>     =<var>BLOCK_TYPE</var>  <var>BLOCK DATA</var>
      <var>MORE BLOCK DATA</var>
 
@@ -183,8 +175,7 @@
          <var>MORE BLOCK DATA</var>
        }
 
-</pre><p>except that the bracketed forms may use 
-<em>any</em> valid Perl 6 bracket delimiter (including repeated opening brackets), as described in Synopsis 2.</p>
+</pre><p>except that the bracketed forms may use <em>any</em> valid Perl 6 bracket delimiter (including repeated opening brackets), as described in Synopsis 2.</p>
 <p>Declarator Pod blocks must either precede or immediately follow a valid Perl 6 declarator, and are then said to be "attached" to it. They are primarily intended to simplify the documentation of code interfaces.</p>
 <p>Declarator blocks that start with <code>#|</code> attach to the declarator at the start of the line immediately after them (separated only by whitespace). Declarator blocks that start with <code>#=</code> attach to the declarator declared at the start of the line immediately before them. In all other respects they act just like comments (i.e. they are themselves whitespace as far as ambient source code is concerned). This means multiple declarator blocks can be specified in a row and will all attach to the same declarator.</p>
 <p>For example:</p>
@@ -271,16 +262,15 @@ my SwissArmy $chainsaw    #= (It has a rocket launcher)</pre><pre>say $chainsaw.
 <pre>    =begin para :nested
     =begin para :nested
     =begin para :nested
-    &quot;We&#39;re going deep, deep, I&lt;deep&gt; undercover!&quot;
+    &quot;We&#39;re going deep, deep, <em>deep</em> undercover!&quot;
     =end para
     =end para
     =end para
 </pre><p>This can be simplified by giving the <code>:nested</code> option a positive integer value:</p>
 <pre>    =begin para <strong>:nested(3)</strong>
-    &quot;We&#39;re going deep, deep, I&lt;deep&gt; undercover!&quot;
+    &quot;We&#39;re going deep, deep, <em>deep</em> undercover!&quot;
     =end para
-</pre><p>You can also give the option a value of zero, to defeat any implicit nesting that might normally be applied to a paragraph. For example, to specify a block of code that should appear 
-<em>without</em> its usual nesting:</p>
+</pre><p>You can also give the option a value of zero, to defeat any implicit nesting that might normally be applied to a paragraph. For example, to specify a block of code that should appear <em>without</em> its usual nesting:</p>
 <pre>    =comment Don&#39;t nest this code block in the usual way...
     <strong>=begin code :nested(0)</strong>
 
@@ -292,7 +282,7 @@ my SwissArmy $chainsaw    #= (It has a rocket launcher)</pre><pre>say $chainsaw.
 
     =end code
 </pre><p>Note that <code>:!nested</code> could also be used for this purpose:</p>
-<pre>    =Z&lt;&gt;begin code :!nested
+<pre>    =begin code :!nested
 </pre><p><code>:numbered</code></p>
 <p>This option specifies that the block is to be numbered. The most common use of this option is to create <a href="#Numbered_headings">numbered headings</a> and <a href="#Ordered_lists">ordered lists</a>, but it can be applied to any block.</p>
 <p>The numbering conventions for headings and lists are specified in those sections, but it is up to individual renderers to decide how to display any numbering associated with other types of blocks.</p>
@@ -311,20 +301,19 @@ my SwissArmy $chainsaw    #= (It has a rocket launcher)</pre><pre>say $chainsaw.
     &gt;&gt;
     =end para
 </pre><p>you can just write:</p>
-<pre>    =begin para <strong>:formatted<B I></strong>
+<pre>    =begin para <strong>:formatted&lt;B I&gt;</strong>
     Warning: Do not immerse in water. Do not expose to bright light.
     Do not feed after midnight.
     =end para
 </pre><p>The internal representations of these two versions are exactly the same, except that the second one retains the <code>:formatted</code> option information as part of the resulting block object.</p>
-<p>Like all formatting codes, codes applied via a <code>:formatted</code> are inherently cumulative. For example, if the block itself is already inside a formatting code, that formatting code will still apply, in addition to the extra "basis" and "important" formatting specified by <code>:formatted<B I></code>.</p>
+<p>Like all formatting codes, codes applied via a <code>:formatted</code> are inherently cumulative. For example, if the block itself is already inside a formatting code, that formatting code will still apply, in addition to the extra "basis" and "important" formatting specified by <code>:formatted&lt;B I&gt;</code>.</p>
 <p><code>:like</code></p>
 <p>This option specifies that a block or config has the same formatting properties as the type named by its value. This is useful for creating related <a href="#Block_pre-configuration">configurations</a> or for making user-defined synonyms for existing types. For example:</p>
 <pre>    =config head2  :like&lt;head1&gt; :formatted&lt;I&gt;
 
     =config Subhead :like&lt;head2&gt;
 </pre><p><code>:allow</code></p>
-<p>This option expects a list of formatting codes that are to be recognized within any <code>V<></code> codes that appear in (or are implicitly applied to) the current block. The option is most often used on <code>=code</code> blocks to allow mark-up within those otherwise verbatim blocks, though it can be used in 
-<em>any</em> block that contains verbatim text. See <a href="#Formatting_within_code_blocks">#Formatting within code blocks</a>.</p>
+<p>This option expects a list of formatting codes that are to be recognized within any <code>V&lt;&gt;</code> codes that appear in (or are implicitly applied to) the current block. The option is most often used on <code>=code</code> blocks to allow mark-up within those otherwise verbatim blocks, though it can be used in <em>any</em> block that contains verbatim text. See <a href="#Formatting_within_code_blocks">#Formatting within code blocks</a>.</p>
 <p><code>:margin</code></p>
 <p>This option specifies a character that indicates the left margin of the contents of the block. Normally this left margin is determined by the column at which the <code>=</code> of the opening block-delimiter occurs. For example:</p>
 <pre>    =head1 Indenting Pod blocks

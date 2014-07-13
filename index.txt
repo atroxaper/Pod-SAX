@@ -485,7 +485,7 @@ or even by folding the text (so long as a visible placeholder is provided).
 
 Occasionally it is desirable to nest content by more than one level:
 
-=begin code
+=begin code :allow<I>
     =begin para :nested
     =begin para :nested
     =begin para :nested
@@ -498,7 +498,7 @@ Occasionally it is desirable to nest content by more than one level:
 This can be simplified by giving the C<:nested> option a positive integer
 value:
 
-=begin code :allow<B>
+=begin code :allow<B I>
     =begin para B<:nested(3)>
     "We're going deep, deep, I<deep> undercover!"
     =end para
@@ -525,7 +525,7 @@ nesting:
 Note that C<:!nested> could also be used for this purpose:
 
 =begin code
-    =Z<>begin code :!nested
+    =begin code :!nested
 =end code
 
 =end defn
