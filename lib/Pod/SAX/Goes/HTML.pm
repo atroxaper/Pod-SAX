@@ -6,6 +6,27 @@ module Pod::SAX::Goes::HTML {
 
 	my $N = "\n";
 
+	my %simple-format =
+		C => 'code',
+		I => 'em',
+		B => 'strong',
+		R => 'var';
+
+	# I stole that sub from L<Pod::To::HTML module|https://github.com/perl6/Pod-To-HTML>
+	sub escape_html(Str $str) returns Str {
+		return $str unless $str ~~ /<[&<>"']>/;
+
+		$str.trans( [ q{&},     q{<},    q{>},    q{"},      q{'}     ] =>
+					[ q{&amp;}, q{&lt;}, q{&gt;}, q{&quot;}, q{&#39;} ] );
+	}
+
+	# I stole that sub from L<Pod::To::HTML module|https://github.com/perl6/Pod-To-HTML>
+	sub escape_id ($id) {
+		$id.subst(/\s+/, '_', :g);
+	}
+
+	#| Sub renders a Table of Contents.
+	#| It find in %storage<toc> an Array with triples (level, href_id, to_display_text)
 	sub render-toc(:%storage) {
 		return True, '' unless %storage<toc>;
 		my @result;
@@ -34,12 +55,15 @@ module Pod::SAX::Goes::HTML {
 		return True, @result.join;
 	}
 
-	my @comment =
+	my (@comment, @named, @para, @table, @formatting, @heading, @code) = ();
+
+	# =comment #
+	push @comment,
 		:() => {
 			in => { say qq[find comment: $:content]; }
 		};
-	my @named =
-		# =begin pod #
+	# start of html #
+	push @named,
 		:(:$name where 'pod') => {
 			start => {
 				append(
@@ -52,17 +76,30 @@ module Pod::SAX::Goes::HTML {
 			stop => {
 				append(qq[</body>{$N}</html>{$N}]);
 			}
-		},
-		:(:$name where 'VERSION' | 'AUTHOR') => {
-			start => { append qq[<section>{$N}<h1>$:name\</h1>{$N}]; },
-			stop =>  { append qq[</section>{$N}]; }
-		},
-		:(:$name where 'output') => {
-			start => { append q[<samp>]; },
-			stop =>  { append q[</samp>]; }
 		};
-	my @para =
-		# that para is content of =TITLE #
+	# =head #
+	push @heading,
+		:() => {
+			start => {
+				my $bare = get-bare-content($:instance);
+				my $bare-id = escape_id($bare);
+				append qq[<h$:level id="{$bare-id}">];
+				my @toc = @(%:storage<toc>) || ();
+				@toc[+@toc] = $:level, $bare-id, $bare;
+				%:storage<toc> = @toc;
+			},
+			stop => { append qq[</h$:level>]; }
+		};
+	push @para,
+		:(:@history where *.&under-type(Pod::Heading)) => {
+			start => { True },
+			in => {
+				append qq[<a class="u" href="#___top" title="go to top document">$:content\</a>];
+			},
+			stop => { True }
+		};
+	# =TITLE #
+	push @para,
 		:(:@history where *.&under-name('TITLE')) => {
 			start => { append q[<h1>]; },
 			in => {
@@ -75,28 +112,27 @@ module Pod::SAX::Goes::HTML {
 				my $toc = CallbackAnchor.new(:callback(&render-toc), :priority(1));
 				append $toc;
 			}
-		},
-		# that para is content of =head #
-		:(:@history where *.&under-type(Pod::Heading)) => {
-			start => { True },
-			in => {
-				append qq[<a class="u" href="#___top" title="go to top document">$:content\</a>];
-			},
-			stop => { True }
-		},
-		# that para is content of =begin output #
+		};
+	# =VERSION and =AUTHOR #
+	push @named,
+		:(:$name where 'VERSION' | 'AUTHOR') => {
+			start => { append qq[<section>{$N}<h1>$:name\</h1>{$N}]; },
+			stop =>  { append qq[</section>{$N}]; }
+		};
+	# =output #
+	push @named,
+		:(:$name where 'output') => {
+			start => { append q[<samp>]; },
+			stop =>  { append q[</samp>]; }
+		};
+	push @para,
 		:(:@history where *.&under-name('output')) => {
 			start => { True; },
 			in =>    { append $:content },
 			stop =>  { append q[</br>]; }
-		},
-		# General Paragraph #
-		:() => {
-			start => { append "<p>"; },
-			in => { append $:content; },
-			stop => { append "</p>{$N}"; }
 		};
-	my @table =
+	# =table #
+	push @table,
 		:() => {
 			start => {
 				append qq[<table>{$N}];
@@ -120,7 +156,8 @@ module Pod::SAX::Goes::HTML {
 			},
 			stop => { append qq[</tbody>{$N}</table>{$N}]; }
 		};
-	my @formatting =
+	# L<> #
+	push @formatting,
 		:(:$type where 'L') => {
 			start => sub (:$instance, :@meta) {
 				my $good-meta;
@@ -155,12 +192,9 @@ module Pod::SAX::Goes::HTML {
 				append $:content;
 			},
 			stop => { append qq[</a>]; }
-		},
-		:(:$type where 'C') => {
-			start => { append q[<code>]; },
-			in => { append $:content; },
-			stop => { append q[</code>]; }
-		},
+		};
+	# D<> #
+	push @formatting,
 		:(:$type where 'D') => {
 			start => { append qq[{$N}<dfn id="]; },
 			in => {
@@ -171,35 +205,23 @@ module Pod::SAX::Goes::HTML {
 				%:storage{$_} = $id for @:meta;
 			},
 			stop => { append qq[</dfn>]; }
-		},
-		:(:$type where 'I') => {
-			start => { append qq[{$N}<em>]; },
-			in => { append $:content; },
-			stop => { append qq[</em>]; }
-		},
-		:(:$type where 'B') => {
-			start => { append q[<strong>]},
-			in => { append $:content; },
-			stop => { append q[</strong>]}
-		},
-		:(:$type where 'R') => {
-			start => { append q[<var>]},
+		}
+	# C<> I<> B<> R<> #
+	push @formatting,
+		:(:$type where 'C' | 'I' | 'B' | 'R') => {
+			start => { my $tag = %simple-format{$:type}; append qq[<{$tag}>]; },
 			in => { append escape_html($:content); },
-			stop => { append q[</var>]}
+			stop =>  { my $tag = %simple-format{$:type}; append qq[</{$tag}>]; }
 		};
-	my @heading =
+	# General Paragraph #
+	push @para,
 		:() => {
-			start => {
-				my $bare = get-bare-content($:instance);
-				my $bare-id = escape_id($bare);
-				append qq[<h$:level id="{$bare-id}">];
-				my @toc = @(%:storage<toc>) || ();
-				@toc[+@toc] = $:level, $bare-id, $bare;
-				%:storage<toc> = @toc;
-			},
-			stop => { append qq[</h$:level>]; }
+			start => { append "<p>"; },
+			in => { append $:content; },
+			stop => { append "</p>{$N}"; }
 		};
-	my @code =
+	# =code #
+	push @code,
 		:() => {
 			start => { append qq[<pre>]; },
 			in => { append escape_html($:content); },
@@ -218,17 +240,4 @@ module Pod::SAX::Goes::HTML {
 
 		return $reformer;
 	}
-
-	# I stole that sub from L<Pod::To::HTML module|https://github.com/perl6/Pod-To-HTML>
-	sub escape_html(Str $str) returns Str {
-        return $str unless $str ~~ /<[&<>"']>/;
-
-        $str.trans( [ q{&},     q{<},    q{>},    q{"},      q{'}     ] =>
-                    [ q{&amp;}, q{&lt;}, q{&gt;}, q{&quot;}, q{&#39;} ] );
-    }
-
-    # I stole that sub from L<Pod::To::HTML module|https://github.com/perl6/Pod-To-HTML>
-    sub escape_id ($id) {
-        $id.subst(/\s+/, '_', :g);
-    }
 }
