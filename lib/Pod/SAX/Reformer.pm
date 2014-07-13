@@ -23,7 +23,9 @@ class Reformer {
 		$!iter .= new;
 		$!iter.init($pod);
 		my @history;
+        my @*draft;
 		self!visit(($!iter.get-next)[0], @history);
+        @!draft ,= @*draft;
 		return True;
 	}
 
@@ -48,7 +50,7 @@ class Reformer {
 
 	method !call(@need-to-call, $type where any('start', 'stop', 'in'), %attrs) {
 		for @need-to-call.grep({? $_{$type}}).map({$_{$type}}) -> $sub {
-			my %args = filter-args($sub, %attrs);
+			my %args = filter-args($sub.signature, %attrs);
 			if %args ~~ $sub.signature {
 				return if $sub(|%args);
 			}
@@ -57,9 +59,8 @@ class Reformer {
 
 	method !get-satisfy($pod-name, %args) {
 		my @result = ();
-		for self.callbacks{$pod-name}.list.map({.key, .value}) -> $selector, $functions {
-			my %need-args = filter-args($selector, %args);
-			if ((%need-args ~~ $selector.signature) && ($selector(|%need-args))) {
+		for self.callbacks{$pod-name}>>.kv -> $selector, $functions {
+			if filter-args($selector, %args) ~~ $selector {
 				@result.push($functions);
 			}
 		}
@@ -98,7 +99,6 @@ class Reformer {
 	method make-attrs($pod, $caller, @history, %state) {
 		my %result = self.get-attributes($pod);
 		%result<instance> = $pod;
-		%result<draft> = $caller.draft;
 		%result<history> = @history;
 		%result<storage> = $caller.storage;
 		%result<state> = %state;

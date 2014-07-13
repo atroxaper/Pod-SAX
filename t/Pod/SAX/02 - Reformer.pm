@@ -24,12 +24,12 @@ plan 19;
 	lives_ok {$reformer = Reformer.new}, 'create Reformer';
 
 	my @para =
-		sub { True; } => {
-			in => sub (:@draft, :$content) { push @draft, $content; True; }
+		:() => {
+			in => { append $:content; }
 		};
 	my @format =
-		sub (:$type where {$type eq 'D'}) { True; } => {
-			in => sub (:@draft, :$content) { push @draft, 'D' ~ $content ~ 'D'; True; }
+		:(:$type where 'D') => {
+			in => { append 'D' ~ $:content ~ 'D'; }
 		};
 	$reformer.callbacks{Pod::Block::Para.^name} = @para;
 	$reformer.callbacks{Pod::FormattingCode.^name} = @format;
@@ -72,10 +72,10 @@ plan 19;
 	my $pod = get-pod($pod-string);
 
 	my @head-calls =
-		sub (:$level, :%config, :@content, :$reformer) { return so .defined for $level, %config, @content, $reformer; } => {
-			start => sub (:@draft) {@draft.push('start of head'); True; },
-			stop => sub (:@draft) {@draft.push('stop of head'); True; },
-			in => sub (:@draft) {@draft.push('in of head'); True; }
+		:(:$level, :%config, :@content, :$reformer where {all($level, %config, @content, $reformer).defined}) => {
+			start => { append 'start of head' },
+			stop  => { append 'stop of head'  },
+			in    => { append 'in of head'    }
 		};
 
 	my Reformer $reformer .= new();
@@ -98,20 +98,20 @@ plan 19;
 	my $pod = get-pod($pod-string);
 	my Reformer $reformer .= new();
 	my @heading =
-		sub { True; } => {
-			start => sub (:@draft, :$level) { push @draft, "<h$level>"; True; },
-			stop => sub (:@draft, :$level) { push @draft, "</h$level>"; True; }
+		:() => {
+			start => { append "<h$:level>"  },
+			stop  => { append "</h$:level>" }
 		};
 	my @para =
-		sub (:@history where {@history && @history[*-1] ~~ Pod::Heading}) { True; } => {
-			in => sub (:@draft, :$content) { push @draft, "big para $content"; True; }
+		:(:@history where {$_ && $_[*-1] ~~ Pod::Heading}) => {
+			in => { append "big para $:content" }
 		},
-		sub { True; } => {
-			in => sub (:@draft, :$content) { push @draft, $content; True; }
+		:() => {
+			in => { append $:content }
 		};
 	my @format =
-		sub (:$type where {$type eq 'D'}) { True; } => {
-			in => sub (:@draft, :$content) { push @draft, 'D' ~ $content ~ 'D'; True; }
+		:(:$type where 'D') => {
+			in => { append 'D' ~ $:content ~ 'D' }
 		};
 	$reformer.callbacks{Pod::Heading.^name} = @heading;
 	$reformer.callbacks{Pod::Block::Para.^name} = @para;
@@ -134,8 +134,8 @@ plan 19;
     my $pod = get-pod($pod-string);
     my Reformer $reformer .= new;
     my @para =
-    	sub (:@history where {@history && @history[*-1] ~~ Pod::Block::Named && @history[*-1].name ~~ 'TITLE'}) { True; } => {
-    		in => sub (:$content, :@draft, :%storage) { push @draft, $content; %storage{'TITLE'} = $content; True; }
+    	:(:@history where {$_ && $_[*-1] ~~ Pod::Block::Named && $_[*-1].name ~~ 'TITLE'}) => {
+    		in => { append $:content; %:storage{'TITLE'} = $content }
     	};
 	$reformer.callbacks{Pod::Block::Para.^name} = @para;
 	$reformer.reform($pod);
@@ -162,15 +162,15 @@ plan 19;
 	my $pod = get-pod($pod-string);
 	my Reformer $reformer .= new;
 	my @para =
-		sub { True; } => {
-			start => sub (:%state) { %state<foo> = 'bar'; True; },
-			in => sub (:$content, :@draft, :%storage) { push @draft, $content; True; },
-			stop => sub (:@draft, :%state) { push @draft, %state<foo>; True; }
+		:() => {
+			start => { %:state<foo> = 'bar' },
+			in    => { append $:content },
+			stop  => { append %:state<foo> }
 		};
 	my @named =
-		sub (:$name where({$^name eq 'TITLE'})) { True; } => { # TODO why we need '^'
-			start => sub (:%state) { %state<foo> = 'foobar'; True; },
-			stop => sub (:@draft, :%state) { push @draft, %state<foo>; True; }
+		:(:$name where 'TITLE') => {
+			start => { %:state<foo> = 'foobar' },
+			stop  => { append %:state<foo> }
 		};
 	$reformer.callbacks{Pod::Block::Para.^name} = @para;
 	$reformer.callbacks{Pod::Block::Named.^name} = @named;
@@ -190,15 +190,15 @@ plan 19;
 	my $pod = get-pod($pod-string);
 	my Reformer $reformer .= new;
 	my @para =
-		sub { True; } => {
-			start => sub (:@draft) { push @draft, SimpleAnchor.new(:template('<p><%=para1%></p>'), :priority(0)); True; },
-			in => sub (:@draft) { push @draft, SimpleAnchor.new(:template('<p><%=para2%></p>'), :priority(0)); True; },
-			stop => sub (:@draft) { push @draft, SimpleAnchor.new(:template('<p><%=para3%></p>'), :priority(0)); True; },
+		:() => {
+			start => { append SimpleAnchor.new(:template('<p><%=para1%></p>'), :priority(0)) },
+			in    => { append SimpleAnchor.new(:template('<p><%=para2%></p>'), :priority(0)) },
+			stop  => { append SimpleAnchor.new(:template('<p><%=para3%></p>'), :priority(0)) },
 		};
 	my @named =
-		sub (:$name where({$^name eq 'TITLE'})) { True; } => { # TODO why we need '^'
-			start => sub (:@draft) { push @draft, SimpleAnchor.new(:template('<title><%=TITLE%></title>'), :priority(0)); True; },
-			stop => sub (:%storage) { %storage<para1> = 'p1'; %storage<para2> = 'p2';
+		:(:$name where 'TITLE') => { # TODO why we need '^'
+			start => { append SimpleAnchor.new(:template('<title><%=TITLE%></title>'), :priority(0)) },
+			stop  => { %:storage<para1> = 'p1'; %storage<para2> = 'p2';
 				%storage<para3> = 'p3'; %storage<TITLE> = 'title'; %storage<foo> = 'bar'; }
 		};
 	$reformer.callbacks{Pod::Block::Para.^name} = @para;

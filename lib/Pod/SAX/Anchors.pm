@@ -60,7 +60,7 @@ module Pod::SAX::Anchors {
 		method prepare() {
 			my &func = &.callback;
 			my %args = storage => %.storage, draft => @.draft, custom => %.custom;
-			%args = filter-args(&func, %args);
+			%args = filter-args(&func.signature, %args);
 			my @res = &func(|%args);
 			if @res[0] == True {
 				$.prepared = True;

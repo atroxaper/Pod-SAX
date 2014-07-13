@@ -38,12 +38,12 @@ plan 18;
 	my $pod = get-pod($pod-string);
 	my Reformer $reformer .= new;
 	my @para =
-		sub (:@history where {@history.&under-name('TITLE')}) { True; } => {
-			start => sub (:@draft) { push @draft, 'under title'; True; }
+		:(:@history where *.&under-name('TITLE')) => {
+			start => { append 'under title'; True; }
 		};
 	my @named =
-		sub (:@history where {@history.&under-type(Pod::Block::Named)}) { True; } => {
-			start => sub (:@draft) { push @draft, 'under named'; True; }
+		:(:@history where *.&under-type(Pod::Block::Named)) => {
+			start => { append 'under named'; True; }
 		};
 	$reformer.callbacks{Pod::Block::Para.^name} = @para;
 	$reformer.callbacks{Pod::Block::Named.^name} = @named;
