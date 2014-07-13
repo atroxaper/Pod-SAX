@@ -45,6 +45,7 @@ module Pod::SAX::Goes::HTML {
 				append(
 					qq[<!doctype html>{$N}<html>{$N}<head>{$N}],
 					SimpleAnchor.new(:template(qq[<title><%=TITLE%></title>{$N}])),
+					qq[<link href="index.css" type="text/css" rel="stylesheet">{$N}],
 					qq[</head>{$N}<body class="pod" id="___top">{$N}]
 				);
 			},
@@ -55,6 +56,10 @@ module Pod::SAX::Goes::HTML {
 		:(:$name where 'VERSION' | 'AUTHOR') => {
 			start => { append qq[<section>{$N}<h1>$:name\</h1>{$N}]; },
 			stop =>  { append qq[</section>{$N}]; }
+		},
+		:(:$name where 'output') => {
+			start => { append q[<samp>]; },
+			stop =>  { append q[</samp>]; }
 		};
 	my @para =
 		# that para is content of =TITLE #
@@ -65,7 +70,7 @@ module Pod::SAX::Goes::HTML {
 				%:storage{'TITLE'} = $:content;
 			},
 			stop => {
-				append q[</h1>];
+				append qq[</h1>{$N}];
 				# TOC should be after the title of page #
 				my $toc = CallbackAnchor.new(:callback(&render-toc), :priority(1));
 				append $toc;
@@ -78,6 +83,12 @@ module Pod::SAX::Goes::HTML {
 				append qq[<a class="u" href="#___top" title="go to top document">$:content\</a>];
 			},
 			stop => { True }
+		},
+		# that para is content of =begin output #
+		:(:@history where *.&under-name('output')) => {
+			start => { True; },
+			in =>    { append $:content },
+			stop =>  { append q[</br>]; }
 		},
 		# General Paragraph #
 		:() => {

@@ -72,7 +72,10 @@ plan 19;
 	my $pod = get-pod($pod-string);
 
 	my @head-calls =
-		:(:$level, :%config, :@content, :$reformer where {all($level, %config, @content, $reformer).defined}) => {
+		#| There is example that we can use as Signature, as Sub like selector of callback. #
+		sub (:$level, :%config, :@content, :$reformer) {
+			return all($level, %config, @content, $reformer).defined;
+		} => {
 			start => { append 'start of head' },
 			stop  => { append 'stop of head'  },
 			in    => { append 'in of head'    }
