@@ -365,7 +365,7 @@ sub get-test-result(Str $source --> Str) {
 		=end item
 		=end para
 		END
-	is get-test-result($pod-str), q:to[END].&rm-n, 'two ordered lists in one list';
+	is get-test-result($pod-str), q:to[END].&rm-n, 'multi-paragraph list';
 		<p><ol>
 		<li>Item</br>Same item</li>
 		<li>Another item</br>Continue another item</li>
