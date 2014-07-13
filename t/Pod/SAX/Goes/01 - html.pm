@@ -6,7 +6,7 @@ use Pod::SAX::Goes::HTML;
 use Pod::SAX::Reformer;
 use Pod::SAX::Common;
 
-plan 25;
+plan 33;
 
 # some consts #
 my $heading-to-top = q[<a class="u" href="#___top" title="go to top document">];
@@ -211,3 +211,164 @@ sub get-test-result(Str $source --> Str) {
 	is get-test-result($pod-str), $expect.&rm-n, '=output';
 }
 
+{# Lists
+	my $pod-str = q:to[END];
+		=begin para
+		=item  Happy
+		=item  Dopey
+		=end para
+		END
+	is get-test-result($pod-str), q:to[END].&rm-n, 'unordered list';
+		<p><ul>
+		<li>Happy</li>
+		<li>Dopey</li>
+		</ul></p>
+		END
+
+	$pod-str = q:to[END];
+		=begin para
+		=item1  Animal
+		=item2     Vertebrate
+		=item2     Invertebrate
+
+		=item1  Phase
+		=item2     Solid
+		=end para
+		END
+	is get-test-result($pod-str), q:to[END].&rm-n, 'unordered list with sublist';
+		<p><ul>
+		<li>Animal</li>
+		<ul>
+		<li>Vertebrate</li>
+		<li>Invertebrate</li>
+		</ul>
+		<li>Phase</li>
+		<ul>
+		<li>Solid</li>
+		</ul>
+		</ul></p>
+		END
+
+	$pod-str = q:to[END];
+		=begin para
+		=for item1 :numbered
+		Visito
+
+		=for item2 :numbered
+		Veni
+
+		=for item2 :numbered
+		Vidi
+		=end para
+		END
+	is get-test-result($pod-str), q:to[END].&rm-n, 'ordered list';
+		<p><ol>
+		<li>Visito</li>
+		<ol>
+		<li>Veni</li>
+		<li>Vidi</li>
+		</ol>
+		</ol></p>
+		END
+
+	$pod-str = q:to[END];
+		=begin para
+		=item1  # Visito
+		=item2     # Veni
+		=item2     # Vidi
+		=end para
+		END
+	is get-test-result($pod-str), q:to[END].&rm-n, 'ordered list with #';
+		<p><ol>
+		<li>Visito</li>
+		<ol>
+		<li>Veni</li>
+		<li>Vidi</li>
+		</ol>
+		</ol></p>
+		END
+
+	$pod-str = q:to[END];
+		=begin para
+		=item V<#> introduces a comment
+		=for item :!numbered
+		# introduces a comment
+		=end para
+		END
+	is get-test-result($pod-str), q:to[END].&rm-n, 'unordered list with #';
+		<p><ul>
+		<li># introduces a comment</li>
+		<li># introduces a comment</li>
+		</ul></p>
+		END
+
+	$pod-str = q:to[END];
+		=begin para
+		=item1 # Death
+		=item1 # Beer
+
+		The tools are:
+
+		=item1 # Revolution
+		=item1 # Deep-fried peanut butter sandwich
+		=end para
+		END
+	is get-test-result($pod-str), q:to[END].&rm-n, 'tow ordered lists';
+		<p><ol>
+		<li>Death</li>
+		<li>Beer</li>
+		</ol>
+		The tools are:
+		<ol>
+		<li>Revolution</li>
+		<li>Deep-fried peanut butter sandwich</li>
+		</ol></p>
+		END
+
+	$pod-str = q:to[END];
+		=begin para
+		=for item1
+		# Retreat to remote Himalayan monastery
+
+		=for item1
+		# Learn the hidden mysteries of space and time
+
+		I<????>
+
+		=for item1 :continued
+		# Prophet!
+		=end para
+		END
+	is get-test-result($pod-str), q:to[END].&rm-n, 'two ordered lists in one list';
+		<p><ol>
+		<li>Retreat to remote Himalayan monastery</li>
+		<li>Learn the hidden mysteries of space and time</li>
+		</ol>
+		<em>????</em>
+		<ol start="3">
+		<li>Prophet!</li>
+		</ol></p>
+		END
+
+	$pod-str = q:to[END];
+		=begin para
+		=begin item :numbered
+		Item
+
+		Same item
+		=end item
+
+		=begin item :numbered
+		Another item
+
+		Continue another item
+		=end item
+		=end para
+		END
+	is get-test-result($pod-str), q:to[END].&rm-n, 'two ordered lists in one list';
+		<p><ol>
+		<li>Item</br>Same item</li>
+		<li>Another item</br>Continue another item</li>
+		</ol></p>
+		END
+}

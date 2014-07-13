@@ -349,6 +349,15 @@ my SwissArmy $chainsaw    #= (It has a rocket launcher)</pre><pre>say $chainsaw.
        }
 </pre><p>When a <code>:margin</code> option is used, each subsequent line (until the corresponding closing delimiter is encountered) simply has any text matching <code>/^^ \s* $margin_char/</code> automatically removed. This may include a line that then becomes the closing delimiter, as in the above example.</p>
 <p>Any line from which such a margin marker is removed automatically resets the implicit margin for subsequent lines of the block, setting it to the length of the "marginalized" indent that was just removed. This implicit margin is then used until the next line with an explicit margin marker is encountered, or the block terminates.</p>
+
+<ol>
+    <li>Visito</li>
+    <ol>
+        <li>Veni</li>
+        <li>Vidi</li>
+    </ol>
+</ol>
+
 </body>
 </html>
 
