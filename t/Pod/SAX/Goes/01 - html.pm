@@ -220,8 +220,8 @@ sub get-test-result(Str $source --> Str) {
 		END
 	is get-test-result($pod-str), q:to[END].&rm-n, 'unordered list';
 		<p><ul>
-		<li>Happy</li>
-		<li>Dopey</li>
+		<li type="disc">Happy</br></li>
+		<li type="disc">Dopey</br></li>
 		</ul></p>
 		END
 
@@ -237,14 +237,14 @@ sub get-test-result(Str $source --> Str) {
 		END
 	is get-test-result($pod-str), q:to[END].&rm-n, 'unordered list with sublist';
 		<p><ul>
-		<li>Animal</li>
+		<li type="disc">Animal</br></li>
 		<ul>
-		<li>Vertebrate</li>
-		<li>Invertebrate</li>
+		   <li type="circle">Vertebrate</br></li>
+		   <li type="circle">Invertebrate</br></li>
 		</ul>
-		<li>Phase</li>
+		<li type="disc">Phase</br></li>
 		<ul>
-		<li>Solid</li>
+		   <li type="circle">Solid</br></li>
 		</ul>
 		</ul></p>
 		END
@@ -263,10 +263,10 @@ sub get-test-result(Str $source --> Str) {
 		END
 	is get-test-result($pod-str), q:to[END].&rm-n, 'ordered list';
 		<p><ol>
-		<li>Visito</li>
+		<li type="1" value="1">Visito</br></li>
 		<ol>
-		<li>Veni</li>
-		<li>Vidi</li>
+		<li type="I" value="1">Veni</br></li>
+		<li type="I" value="2">Vidi</br></li>
 		</ol>
 		</ol></p>
 		END
@@ -280,10 +280,10 @@ sub get-test-result(Str $source --> Str) {
 		END
 	is get-test-result($pod-str), q:to[END].&rm-n, 'ordered list with #';
 		<p><ol>
-		<li>Visito</li>
+		<li type="1" value="1">Visito</br></li>
 		<ol>
-		<li>Veni</li>
-		<li>Vidi</li>
+		<li type="1" value="1">Veni</br></li>
+		<li type="1" value="2">Vidi</br></li>
 		</ol>
 		</ol></p>
 		END
@@ -297,8 +297,8 @@ sub get-test-result(Str $source --> Str) {
 		END
 	is get-test-result($pod-str), q:to[END].&rm-n, 'unordered list with #';
 		<p><ul>
-		<li># introduces a comment</li>
-		<li># introduces a comment</li>
+		<li type="disc"># introduces a comment</br></li>
+		<li type="disc"># introduces a comment</br></li>
 		</ul></p>
 		END
 
@@ -315,13 +315,13 @@ sub get-test-result(Str $source --> Str) {
 		END
 	is get-test-result($pod-str), q:to[END].&rm-n, 'tow ordered lists';
 		<p><ol>
-		<li>Death</li>
-		<li>Beer</li>
+		<li type="1" value="1">Death</br></li>
+		<li type="1" value="2">Beer</br></li>
 		</ol>
 		The tools are:
 		<ol>
-		<li>Revolution</li>
-		<li>Deep-fried peanut butter sandwich</li>
+		<li type="1" value="1">Revolution</br></li>
+		<li type="1" value="2">Deep-fried peanut butter sandwich</br></li>
 		</ol></p>
 		END
 
@@ -341,12 +341,12 @@ sub get-test-result(Str $source --> Str) {
 		END
 	is get-test-result($pod-str), q:to[END].&rm-n, 'two ordered lists in one list';
 		<p><ol>
-		<li>Retreat to remote Himalayan monastery</li>
-		<li>Learn the hidden mysteries of space and time</li>
+		<li type="1" value="1">Retreat to remote Himalayan monastery</br></li>
+		<li type="1" value="2">Learn the hidden mysteries of space and time</br></li>
 		</ol>
 		<em>????</em>
-		<ol start="3">
-		<li>Prophet!</li>
+		<ol>
+		<li type="1" value="3">Prophet!</br></li>
 		</ol></p>
 		END
 
@@ -367,8 +367,8 @@ sub get-test-result(Str $source --> Str) {
 		END
 	is get-test-result($pod-str), q:to[END].&rm-n, 'multi-paragraph list';
 		<p><ol>
-		<li>Item</br>Same item</li>
-		<li>Another item</br>Continue another item</li>
+		<li type="1" value="1">Item</br>Same item</br></li>
+		<li type="1" value="2">Another item</br>Continue another item</br></li>
 		</ol></p>
 		END
 }

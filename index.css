@@ -25,3 +25,23 @@ code {
 samp {
 	font-family: "Terminus", "Courier", "Lucida Console", monospace
 }
+
+/* lists
+ * o - ordered
+ * u - unordered
+ * l<N> - level number of an unordered item
+ * v<N> - value number of an ordered item */
+
+li.ul1 { type: disc; }
+li.ul2 { type: circle; }
+li.ul3 { type: square; }
+li.ul4 { type: square; }
+li.ul5 { type: square; }
+li.ul6 { type: square; }
+li.ul7 { type: square; }
+
+li.ov1 {
+	type: 1;
+	value: 1;
+}
+
