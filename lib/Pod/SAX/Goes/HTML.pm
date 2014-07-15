@@ -34,8 +34,8 @@ module Pod::SAX::Goes::HTML {
 
 		my $c-level = 0;
 		push @result, '<nav class="indexgroup">';
-		for @with-headers -> @head {
-			my $n-level = @head[0];
+		for @with-headers -> %head {
+			my $n-level = %head<level>;
 			# render <ol> and </ol> #
 			loop (my $i = $c-level + 1; $i <= $n-level; ++$i) {
 				@result.push(qq[<ol class="indexList indexList{$i}">]);
@@ -45,7 +45,7 @@ module Pod::SAX::Goes::HTML {
 			}
 			$c-level = $n-level;
 			# render <li><a></a></li> #
-			@result.push(qq[<li class="indexItem indexItem{$c-level}"><a href="#{@head[1]}">{@head[2]}</a></li>]);
+			@result.push(qq[<li class="indexItem indexItem{$c-level}"><a href="#{%head<id>}">{%head<show>}</a></li>]);
 		}
 		# last </ol>s #
 		loop (my $i = $c-level; $i > 0; --$i) {
@@ -85,7 +85,7 @@ module Pod::SAX::Goes::HTML {
 				my $bare-id = escape_id($bare);
 				append qq[<h$:level id="{$bare-id}">];
 				my @toc = @(%:storage<toc>) || ();
-				@toc[+@toc] = $:level, $bare-id, $bare;
+				@toc[+@toc] = %(:level($:level), :id($bare-id), :show($bare));
 				%:storage<toc> = @toc;
 			},
 			stop => { append qq[</h$:level>]; }
