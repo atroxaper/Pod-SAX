@@ -1,6 +1,7 @@
 use v6;
 
 use Test;
+use lib 'lib';
 use Pod::SAX::Reformer;
 
 use Pod::SAX::Common;
@@ -21,9 +22,9 @@ plan 18;
 		END
 
 	my $pod = 'fake';
-	lives_ok {$pod = get-pod($pod-string)}, 'parse pod without exceptions';
-	isa_ok $pod, Array, 'parse pod is adequate';
-	isa_ok $pod[0], Pod::Block::Named, 'parse pod is more adequate then before';
+	lives-ok {$pod = get-pod($pod-string)}, 'parse pod without exceptions';
+	isa-ok $pod, Array, 'parse pod is adequate';
+	isa-ok $pod[0], Pod::Block::Named, 'parse pod is more adequate then before';
 }
 
 {#= test selector's helpers

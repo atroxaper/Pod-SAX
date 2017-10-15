@@ -1,15 +1,16 @@
 use v6;
 
 use Test;
+use lib 'lib';
 use Pod::SAX::Common;
 
 use Pod::SAX::Iter;
 
 plan 7;
 
-my Pod::SAX::Iter::Start $start .= new(:content('cont'));
-is +$start.content, 1, "Start's content has one element";
-is $start.content[0], 'cont', "Start's content has good element";
+my Pod::SAX::Iter::Start $start .= new(:contents('cont'));
+is +$start.contents, 1, "Start's content has one element";
+is $start.contents[0], 'cont', "Start's content has good element";
 
 ok Pod::SAX::Iter::has-content($start), "Start has content";
 nok Pod::SAX::Iter::has-content("String"), "String doesn't have content";
@@ -26,7 +27,7 @@ my $pod = get-pod($pod-string);
 my PodIterator $iter .= new();
 $iter.init($pod);
 my (@pair, @delta, @contents, @items) = ();
-while (@pair = $iter.get-next).elems > 1 {
+while (@pair = $iter.get-next)[0].DEFINITE {
 	@delta.push(@pair[1]);
 	@items.push(@pair[0].^name) if @pair[1] == 1;
 	@contents.push(@pair[0]) if @pair[1] == 0;

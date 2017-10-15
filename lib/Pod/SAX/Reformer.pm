@@ -23,9 +23,9 @@ class Reformer {
 		$!iter .= new;
 		$!iter.init($pod);
 		my @history;
-        my @*draft;
+    my @*draft;
 		self!visit(($!iter.get-next)[0], @history);
-        @!draft ,= @*draft;
+    @!draft.append: @*draft;
 		return True;
 	}
 
@@ -40,7 +40,7 @@ class Reformer {
 			if (@next[1] == 1) {
 				self!visit(@next[0], @history.clone.push($pod));
 			} else {
-				%attrs{'content'} = @next[0];
+				%attrs{'contents'} = @next[0];
 				self!call(@need-to-call, 'in', %attrs);
 			}
 		}
@@ -58,8 +58,9 @@ class Reformer {
 	}
 
 	method !get-satisfy($pod-name, %args) {
+	  return () without %!callbacks{$pod-name};
 		my @result = ();
-		for self.callbacks{$pod-name}.list.map({.key, .value}) -> $selector, $functions {
+		for %!callbacks{$pod-name}.values.map({ .key, .value }) -> ($selector, $functions) {
 			my %need-args = filter-args($selector, %args);
 			if (($selector ~~ Signature && %need-args ~~ $selector)
 			|| ($selector ~~ Sub && %need-args ~~ $selector.signature && $selector(|%need-args))) {

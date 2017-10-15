@@ -1,9 +1,9 @@
 use v6;
 
 use Test;
+use lib 'lib';
 use Pod::SAX::Common;
 use Pod::SAX::Anchors;
-
 use Pod::SAX::Reformer;
 
 plan 19;
@@ -21,20 +21,20 @@ plan 19;
 	my $pod = get-pod($pod-string);
 	my $reformer;
 	my $status;
-	lives_ok {$reformer = Reformer.new}, 'create Reformer';
+	lives-ok {$reformer = Reformer.new}, 'create Reformer';
 
 	my @para =
 		:() => {
-			in => { append $:content; }
+			in => { append $:contents; }
 		};
 	my @format =
 		:(:$type where 'D') => {
-			in => { append 'D' ~ $:content ~ 'D'; }
+			in => { append 'D' ~ $:contents ~ 'D'; }
 		};
 	$reformer.callbacks{Pod::Block::Para.^name} = @para;
 	$reformer.callbacks{Pod::FormattingCode.^name} = @format;
 
-	lives_ok {$status = $reformer.reform($pod)}, 'call callbacks without exceptions';
+	lives-ok {$status = $reformer.reform($pod)}, 'call callbacks without exceptions';
 	ok $status == True, 'status is True';
 	is $reformer.draft.join('|'), '1|2|D3D|4', 'result array in right order';
 }
@@ -60,7 +60,7 @@ plan 19;
 
 	is %pod-attrs.elems, 3, 'pod-info has right size';
 	is %pod-attrs{'config'}.elems, 1, 'heading config has one elem';
-	is %pod-attrs{'config'}.{'huge'}, 1, 'heading config has elem huge => 1';
+	is %pod-attrs{'config'}.{'huge'}, True, 'heading config has elem huge => 1';
 }
 
 {#= test basic functionality
@@ -73,8 +73,8 @@ plan 19;
 
 	my @head-calls =
 		#| There is example that we can use as Signature, as Sub like selector of callback. #
-		sub (:$level, :%config, :@content, :$reformer) {
-			return all($level, %config, @content, $reformer).defined;
+		sub (:$level, :%config, :@contents) {
+			return all($level, %config, @contents).defined;
 		} => {
 			start => { append 'start of head' },
 			stop  => { append 'stop of head'  },
@@ -107,14 +107,14 @@ plan 19;
 		};
 	my @para =
 		:(:@history where {$_ && $_[*-1] ~~ Pod::Heading}) => {
-			in => { append "big para $:content" }
+			in => { append "big para $:contents" }
 		},
 		:() => {
-			in => { append $:content }
+			in => { append $:contents }
 		};
 	my @format =
 		:(:$type where 'D') => {
-			in => { append 'D' ~ $:content ~ 'D' }
+			in => { append 'D' ~ $:contents ~ 'D' }
 		};
 	$reformer.callbacks{Pod::Heading.^name} = @heading;
 	$reformer.callbacks{Pod::Block::Para.^name} = @para;
@@ -138,7 +138,7 @@ plan 19;
     my Reformer $reformer .= new;
     my @para =
     	:(:@history where {$_ && $_[*-1] ~~ Pod::Block::Named && $_[*-1].name ~~ 'TITLE'}) => {
-    		in => { append $:content; %:storage{'TITLE'} = $content }
+    		in => { append $:contents; %:storage{'TITLE'} = $contents }
     	};
 	$reformer.callbacks{Pod::Block::Para.^name} = @para;
 	$reformer.reform($pod);
@@ -167,7 +167,7 @@ plan 19;
 	my @para =
 		:() => {
 			start => { %:state<foo> = 'bar' },
-			in    => { append $:content },
+			in    => { append $:contents },
 			stop  => { append %:state<foo> }
 		};
 	my @named =

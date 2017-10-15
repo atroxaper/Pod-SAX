@@ -60,7 +60,7 @@ module Pod::SAX::Goes::HTML {
 	# =comment #
 	push @comment,
 		:() => {
-			in => { say qq[find comment: $:content]; }
+			in => { say qq[find comment: $:contents]; }
 		};
 	# start of html #
 	push @named,
@@ -68,7 +68,7 @@ module Pod::SAX::Goes::HTML {
 			start => {
 				append(
 					qq[<!doctype html>{$N}<html>{$N}<head>{$N}],
-					SimpleAnchor.new(:template(qq[<title><%=TITLE%></title>{$N}])),
+					SimpleAnchor.new(:template(qq[<title><%\=TITLE%></title>{$N}])),
 					qq[<link href="index.css" type="text/css" rel="stylesheet">{$N}],
 					qq[</head>{$N}<body class="pod" id="___top">{$N}]
 				);
@@ -84,9 +84,9 @@ module Pod::SAX::Goes::HTML {
 				my $bare = get-bare-content($:instance);
 				my $bare-id = escape_id($bare);
 				append qq[<h$:level id="{$bare-id}">];
-				my @toc = @(%:storage<toc>) || ();
-				@toc[+@toc] = %(:level($:level), :id($bare-id), :show($bare));
-				%:storage<toc> = @toc;
+				my \toc = %:storage<toc> // [];
+				push toc, %(:level($:level), :id($bare-id), :show($bare));
+				%:storage<toc> = toc;
 			},
 			stop => { append qq[</h$:level>]; }
 		};
@@ -94,7 +94,7 @@ module Pod::SAX::Goes::HTML {
 		:(:@history where *.&under-type(Pod::Heading)) => {
 			start => { True },
 			in => {
-				append qq[<a class="u" href="#___top" title="go to top document">$:content\</a>];
+				append qq[<a class="u" href="#___top" title="go to top document">$:contents\</a>];
 			},
 			stop => { True }
 		};
@@ -103,8 +103,8 @@ module Pod::SAX::Goes::HTML {
 		:(:@history where *.&under-name('TITLE')) => {
 			start => { append q[<h1>]; },
 			in => {
-				append $:content;
-				%:storage{'TITLE'} = $:content;
+				append $:contents;
+				%:storage{'TITLE'} = $:contents;
 			},
 			stop => {
 				append qq[</h1>{$N}];
@@ -128,7 +128,7 @@ module Pod::SAX::Goes::HTML {
 	push @para,
 		:(:@history where *.&under-name('output')) => {
 			start => { True; },
-			in =>    { append $:content },
+			in =>    { append $:contents },
 			stop =>  { append q[</br>]; }
 		};
 	# =table #
@@ -149,7 +149,7 @@ module Pod::SAX::Goes::HTML {
 			},
 			in => {
 				append qq[<tr>{$N}];
-				for @($:content) -> $td {
+				for @($:contents) -> $td {
 					append qq[<td>{$td}</td>{$N}];
 				}
 				append qq[</tr>{$N}];
@@ -189,7 +189,7 @@ module Pod::SAX::Goes::HTML {
 				append q[<a href="], $good-meta, q[">];
 			},
 			in => {
-				append $:content;
+				append $:contents;
 			},
 			stop => { append qq[</a>]; }
 		};
@@ -198,10 +198,10 @@ module Pod::SAX::Goes::HTML {
 		:(:$type where 'D') => {
 			start => { append qq[{$N}<dfn id="]; },
 			in => {
-				my $id = '_defn_' ~ escape_id($:content);
+				my $id = '_defn_' ~ escape_id($:contents);
 				append qq[{$id}">];
-				append $:content;
-				%:storage{$:content} = $id;
+				append $:contents;
+				%:storage{$:contents} = $id;
 				%:storage{$_} = $id for @:meta;
 			},
 			stop => { append qq[</dfn>]; }
@@ -210,21 +210,21 @@ module Pod::SAX::Goes::HTML {
 	push @formatting,
 		:(:$type where 'C' | 'I' | 'B' | 'R') => {
 			start => { my $tag = %simple-format{$:type}; append qq[<{$tag}>]; },
-			in => { append escape_html($:content); },
+			in => { append escape_html($:contents); },
 			stop =>  { my $tag = %simple-format{$:type}; append qq[</{$tag}>]; }
 		};
 	# General Paragraph #
 	push @para,
 		:() => {
 			start => { append "<p>"; },
-			in => { append $:content; },
+			in => { append $:contents; },
 			stop => { append "</p>{$N}"; }
 		};
 	# =code #
 	push @code,
 		:() => {
 			start => { append qq[<pre>]; },
-			in => { append escape_html($:content); },
+			in => { append escape_html($:contents); },
 			stop => { append qq[</pre>]; }
 		};
 

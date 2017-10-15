@@ -1,7 +1,7 @@
 use v6;
 
 use Test;
-
+use lib 'lib';
 use Pod::SAX::Anchors;
 
 plan 9;
@@ -19,7 +19,7 @@ plan 9;
 	nok $anchor.storage, 'anchor storage is undefined yet';
 	init-anchor($anchor, {draft => (1, 2, 3), storage => {a => 42, b => 43}});
 	ok $anchor.storage, 'anchor storage is defined now';
-	is_deeply $anchor.storage, {a => 42, b => 43}, 'init-anchor works well';
+	is-deeply $anchor.storage, {a => 42, b => 43}, 'init-anchor works well';
 }
 
 {#| test CallbackAnchor

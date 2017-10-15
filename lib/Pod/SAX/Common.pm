@@ -3,6 +3,7 @@ module Pod::SAX::Common {
 	use Pod::SAX::Iter;
 
 	sub get-pod(Str $source) is export {
+    use MONKEY-SEE-NO-EVAL;
 		EVAL $source ~ "\n\$=pod";
 	}
 
@@ -14,9 +15,9 @@ module Pod::SAX::Common {
 		return so @history && @history[*-1] ~~ $type;
 	}
 
-    sub append(*@a) is export {
-        push @*draft, |@a;
-    }
+  sub append(*@a) is export {
+      push @*draft, |@a;
+  }
 
 	grammar MetaL is export {
 		token TOP {
@@ -28,7 +29,7 @@ module Pod::SAX::Common {
 			^^ $<type>=['http'|'https'|'file'|'mailto'|'man'|'doc'|'defn'|'issn'|'isbn'] ':'
 		}
 		token extern {
-			$<from-root>=['//']? $<path>=<-['#']>+
+			$<from-root>=['//']? $<path>=<-[\#]>+
 		}
 		token intern {
 			'#' .+
@@ -50,7 +51,7 @@ module Pod::SAX::Common {
 		my PodIterator $iter .= new;
 		$iter.init($pod);
 		my @pair;
-		while (@pair = $iter.get-next).elems > 1 {
+		while (@pair = $iter.get-next)[0].DEFINITE {
 			@result.push(@pair[0]) if @pair[1] == 0;
 		}
 		return @result.join;

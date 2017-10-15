@@ -1,7 +1,7 @@
 use v6;
 
 use Test;
-
+use lib 'lib';
 use Pod::SAX::Goes::HTML;
 use Pod::SAX::Reformer;
 use Pod::SAX::Common;
@@ -18,6 +18,7 @@ sub rm-n($str) {
 sub get-test-result(Str $source --> Str) {
 	my Reformer $reformer = make-reformer;
 	my $pod = get-pod($source);
+	say $pod;
 	$reformer.reform($pod);
 	return $reformer.get-result.&rm-n;
 }
@@ -66,7 +67,7 @@ sub get-test-result(Str $source --> Str) {
 }
 
 {# links
-	my %links =
+	my @links =
 		'L<http://www.mp3dev.org/mp3/>' => q[<a href="http://www.mp3dev.org/mp3/">http://www.mp3dev.org/mp3/</a>],
 		'L<http://perlcabal.org/syn/S04.html#The_for_statement>' => q[<a href="http://perlcabal.org/syn/S04.html#The_for_statement">http://perlcabal.org/syn/S04.html#The_for_statement</a>],
 		'L<http:tutorial/faq.html>' => q[<a href="tutorial/faq.html">http:tutorial/faq.html</a>],
@@ -88,7 +89,7 @@ sub get-test-result(Str $source --> Str) {
 		=para
 		content
 		END
-	for %links.kv -> $k, $v {
+	for @links.map({ .key, .value }) -> ($k, $v) {
 		is get-test-result($pod-str.subst(/content/, $k)), '<p>' ~ $v ~ '</p>', 'link: ' ~ $k;
 	}
 }
