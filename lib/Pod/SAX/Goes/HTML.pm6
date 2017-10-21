@@ -3,6 +3,8 @@ module Pod::SAX::Goes::HTML {
 	use Pod::SAX::Anchors;
 	use Pod::SAX::Common;
 	use Pod::SAX::Iter;
+	use Pod::Reformer::Extension::List::ListHelper;
+	use Pod::Reformer::Extension::List::ItemType;
 
 	my $N = "\n";
 
@@ -55,7 +57,7 @@ module Pod::SAX::Goes::HTML {
 		return True, @result.join;
 	}
 
-	my (@comment, @named, @para, @table, @formatting, @heading, @code) = ();
+	my (@comment, @named, @para, @table, @formatting, @heading, @code, @item) = ();
 
 	# =comment #
 	push @comment,
@@ -227,9 +229,30 @@ module Pod::SAX::Goes::HTML {
 			in => { append escape_html($:contents); },
 			stop => { append qq[</pre>]; }
 		};
+  # lists
+  push @item,
+    :(:$item-helper!) => {
+      start => {
+        append "<ol>" for ^$:item-helper.opens-lists;
+        if $item-helper.continued {
+          append "<ol>" for ^$item-helper.level;
+        }
+        my $type = $item-helper.type ~~ ItemType::Ordered ?? 'ordered' !! 'unordered';
+        my $level = $item-helper.level;
+        my $number = $item-helper.type ~~ ItemType::Ordered ?? "-n" ~ $item-helper.position !! '';
+        append qq[<li class='list-{$type}-l{$level}{$number}'>];
+      },
+      stop => {
+        append "</li>";
+        append "</ol>" for ^$:item-helper.closes-lists;
+        if $item-helper.paused {
+          append "</ol>" for ^$item-helper.level;
+        }
+      }
+    }
 
 	sub make-reformer() is export {
-		my Reformer $reformer .= new;
+		my Reformer $reformer .= new(extensions => (ListHelper.new));
 		$reformer.callbacks{Pod::Block::Comment.^name} = @comment;
 		$reformer.callbacks{Pod::Block::Named.^name} = @named;
 		$reformer.callbacks{Pod::Block::Para.^name} = @para;
@@ -237,6 +260,7 @@ module Pod::SAX::Goes::HTML {
 		$reformer.callbacks{Pod::FormattingCode.^name} = @formatting;
 		$reformer.callbacks{Pod::Heading.^name} = @heading;
 		$reformer.callbacks{Pod::Block::Code.^name} = @code;
+		$reformer.callbacks{Pod::Item.^name} = @item;
 
 		return $reformer;
 	}
