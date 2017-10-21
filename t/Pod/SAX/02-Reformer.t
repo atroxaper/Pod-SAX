@@ -5,8 +5,9 @@ use lib 'lib';
 use Pod::SAX::Common;
 use Pod::SAX::Anchors;
 use Pod::SAX::Reformer;
+use Pod::Reformer::Extension;
 
-plan 19;
+plan 23;
 
 {
 	my $pod-string = qq:to[END];
@@ -209,4 +210,56 @@ plan 19;
 	$reformer.reform($pod);
 	is $reformer.get-result, '<title>title</title><p>p1</p><p>p2</p><p>p3</p>',
 		'result and anchors calling without priority works well';
+}
+
+{#= test for extensions
+
+  my $pod-string = qq:to[END];
+      =begin pod
+
+      =TITLE
+      Synopsis 26 - Documentation
+
+      Just paragraph;
+
+      =comment comment;
+
+      =end pod
+      END
+  my $pod = get-pod($pod-string);
+  say $pod;
+
+  my class TestExt does Extension {
+    method produce-args(Pod::Block $pod --> List) {
+      my @contents := $pod.contents;
+      my @result[@contents.elems];
+      for @contents.kv -> $i, $content {
+        @result[$i] = %('ext-named' => 1) if $content ~~ Pod::Block::Named;
+        @result[$i] = %('ext-para' => 2, 'ext-para-more' => 3) if $content ~~ Pod::Block::Para;
+      }
+      return @result;
+    }
+  }
+
+  my Reformer $reformer .= new(extensions => (TestExt.new));
+  my ($para1, $para2, $named1, $all) = False, False, False, False;
+  my @para =
+    :(:$ext-para where 2, :$ext-para-more where 3) => {
+      start => { ($para1, $para2) = True, True },
+    },
+    :(:$ext-named where 1, :$ext-para where 2, :$ext-para-more where 3) => {
+      start => { $all = True },
+    };
+  my @named =
+    :(:$name where 'TITLE', :$ext-named where 1) => {\
+      start => { $named1 = True },
+    };
+  $reformer.callbacks{Pod::Block::Para.^name} = @para;
+  $reformer.callbacks{Pod::Block::Named.^name} = @named;
+  $reformer.reform($pod);
+
+  ok $para1, 'callback with arg from extension';
+  ok $para2, 'callback with two args from extension';
+  ok $named1, 'callback with other arg from extension';
+  nok $all, 'args from extension do not mixes';
 }

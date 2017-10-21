@@ -9,6 +9,7 @@ class Reformer {
 	has @.draft;
 	has %.storage;
 	has PodIterator $!iter;
+	has @.extensions;
 
 	method clear() {
 		@.draft = ();
@@ -24,22 +25,25 @@ class Reformer {
 		$!iter.init($pod);
 		my @history;
     my @*draft;
-		self!visit(($!iter.get-next)[0], @history);
+		self!visit(($!iter.get-next)[0], @history, %());
     @!draft.append: @*draft;
 		return True;
 	}
 
-	method !visit($pod, @history) {
-		my %attrs = self.make-attrs($pod, self, @history, {});
+	method !visit($pod, @history, %ext-arg) {
+		my %attrs = self.make-attrs($pod, self, @history, %(), %ext-arg);
+    my @ext-args := self!make-extensions-args($pod);
 		my @need-to-call = self!get-satisfy($pod.^name, %attrs);
 
 		self!call(@need-to-call, 'start', %attrs);
 
 		my @next;
+		my $i = 0;
 		while (@next = $!iter.get-next)[1] > -1 {
 			if (@next[1] == 1) {
-				self!visit(@next[0], @history.clone.push($pod));
+				self!visit(@next[0], @history.clone.push($pod), @ext-args[$i++]);
 			} else {
+			  %attrs.push(@ext-args[$i++].kv);
 				%attrs{'contents'} = @next[0];
 				self!call(@need-to-call, 'in', %attrs);
 			}
@@ -99,12 +103,27 @@ class Reformer {
 		return %result;
 	}
 
-	method make-attrs($pod, $caller, @history, %state) {
+	method make-attrs($pod, $caller, @history, %state, %ext-args) {
 		my %result = self.get-attributes($pod);
 		%result<instance> = $pod;
 		%result<history> = @history;
 		%result<storage> = $caller.storage;
 		%result<state> = %state;
+		%result.push(%ext-args.kv);
 		return %result;
+	}
+
+	method !make-extensions-args($pod) {
+	  my @result;
+	  push @result, %() for $pod.contents;
+
+	  for @!extensions -> $ext {
+	    my @from-ext := $ext.produce-args($pod);
+	    for @from-ext.kv -> $i, $args {
+	      @result[$i].push($args.kv);
+	    }
+	  }
+
+	  return @result;
 	}
 }
