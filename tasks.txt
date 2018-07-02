@@ -2,10 +2,6 @@ Nested:
 	code
 	other...?
 Lists
-	unordered
-	ordered
-	multi-paragrash
-	continued
 	defn
 :formatted< >
 :like

@@ -17,9 +17,9 @@ module Pod::SAX::Goes::HTML {
 	# I stole that sub from L<Pod::To::HTML module|https://github.com/perl6/Pod-To-HTML>
 	sub escape_html(Str $str) returns Str {
 		return $str unless $str ~~ /<[&<>"']>/;
-
-		$str.trans( [ q{&},     q{<},    q{>},    q{"},      q{'}     ] =>
-					[ q{&amp;}, q{&lt;}, q{&gt;}, q{&quot;}, q{&#39;} ] );
+		$str.trans(
+		  [ q{&},     q{<},    q{>},    q{"},      q{'}     ] =>
+			[ q{&amp;}, q{&lt;}, q{&gt;}, q{&quot;}, q{&#39;} ] );
 	}
 
 	# I stole that sub from L<Pod::To::HTML module|https://github.com/perl6/Pod-To-HTML>
