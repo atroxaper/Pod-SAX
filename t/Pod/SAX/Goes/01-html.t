@@ -18,7 +18,6 @@ sub rm-n($str) {
 sub get-test-result(Str $source --> Str) {
 	my Reformer $reformer = make-reformer;
 	my $pod = get-pod($source);
-say $pod;
 	$reformer.reform($pod);
 	return $reformer.get-result.&rm-n;
 }
