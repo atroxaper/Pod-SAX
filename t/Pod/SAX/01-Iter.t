@@ -2,18 +2,18 @@ use v6;
 
 use Test;
 use lib 'lib';
-use Pod::SAX::Common;
+use Saxopod::Reformator::Common;
 
-use Pod::SAX::Iter;
+use Saxopod::Reformator::Iter;
 
 plan 7;
 
-my Pod::SAX::Iter::Start $start .= new(:contents('cont'));
+my Saxopod::Reformator::Iter::Start $start .= new(:contents('cont'));
 is +$start.contents, 1, "Start's content has one element";
 is $start.contents[0], 'cont', "Start's content has good element";
 
-ok Pod::SAX::Iter::has-content($start), "Start has content";
-nok Pod::SAX::Iter::has-content("String"), "String doesn't have content";
+ok Saxopod::Reformator::Iter::has-content($start), "Start has content";
+nok Saxopod::Reformator::Iter::has-content("String"), "String doesn't have content";
 
 my $pod-string = qq:to[END];
 	=begin pod

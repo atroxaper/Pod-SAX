@@ -2,7 +2,7 @@ use v6;
 
 use Test;
 use lib 'lib';
-use Pod::SAX::Anchors;
+use Saxopod::Reformator::Anchors;
 
 plan 9;
 

@@ -2,9 +2,8 @@ use v6;
 
 use Test;
 use lib 'lib';
-use Pod::SAX::Reformer;
-
-use Pod::SAX::Common;
+use Saxopod::Reformator;
+use Saxopod::Reformator::Common;
 
 plan 18;
 
@@ -37,7 +36,7 @@ plan 18;
 		=end pod
 		END
 	my $pod = get-pod($pod-string);
-	my Reformer $reformer .= new;
+	my Reformator $reformator .= new;
 	my @para =
 		:(:@history where *.&under-name('TITLE')) => {
 			start => { append 'under title'; True; }
@@ -46,11 +45,11 @@ plan 18;
 		:(:@history where *.&under-type(Pod::Block::Named)) => {
 			start => { append 'under named'; True; }
 		};
-	$reformer.callbacks{Pod::Block::Para.^name} = @para;
-	$reformer.callbacks{Pod::Block::Named.^name} = @named;
+	$reformator.callbacks{Pod::Block::Para.^name} = @para;
+	$reformator.callbacks{Pod::Block::Named.^name} = @named;
 
-	$reformer.reform($pod);
-	is $reformer.draft.join('|'), 'under named|under title', "selector's helpers works well"
+	$reformator.reform($pod);
+	is $reformator.draft.join('|'), 'under named|under title', "selector's helpers works well"
 }
 
 {#| grammar MetaL test

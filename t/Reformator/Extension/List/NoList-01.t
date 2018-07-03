@@ -1,8 +1,8 @@
 use v6;
 use Test;
 use lib 'lib';
-use Pod::SAX::Common;
-use Pod::Reformer::Extension::List::ListHelper;
+use Saxopod::Reformator::Common;
+use Saxopod::Reformator::Extension::List::ListHelper;
 
 plan 3;
 

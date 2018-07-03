@@ -1,6 +1,6 @@
-module Pod::SAX::Common {
+module Saxopod::Reformator::Common {
 
-	use Pod::SAX::Iter;
+	use Saxopod::Reformator::Iter;
 
 	sub get-pod(Str $source) is export {
     use MONKEY-SEE-NO-EVAL;

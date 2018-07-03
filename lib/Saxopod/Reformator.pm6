@@ -1,8 +1,8 @@
-class Reformer {
+class Reformator {
 
-	use Pod::SAX::Iter;
-	use Pod::SAX::Anchors;
-	use Pod::SAX::Common;
+	use Saxopod::Reformator::Iter;
+	use Saxopod::Reformator::Anchors;
+	use Saxopod::Reformator::Common;
 
 	has %.callbacks is rw;
 	has @.allowable-pod-classes is rw = Pod::Block, Pod::Config;

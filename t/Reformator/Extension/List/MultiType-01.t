@@ -1,10 +1,10 @@
 use v6;
 use Test;
 use lib 'lib';
-use Pod::SAX::Common;
-use Pod::Reformer::Extension::List::ListHelper;
-use Pod::Reformer::Extension::List::ItemHelper;
-use Pod::Reformer::Extension::List::ItemType;
+use Saxopod::Reformator::Common;
+use Saxopod::Reformator::Extension::List::ListHelper;
+use Saxopod::Reformator::Extension::List::ItemHelper;
+use Saxopod::Reformator::Extension::List::ItemType;
 
 my constant IT = ItemType;
 

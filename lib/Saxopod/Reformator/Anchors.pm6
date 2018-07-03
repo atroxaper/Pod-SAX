@@ -1,5 +1,5 @@
-module Pod::SAX::Anchors {
-	use Pod::SAX::Common;
+module Saxopod::Reformator::Anchors {
+	use Saxopod::Reformator::Common;
 
 	role Anchor is export {
 		method prepared(--> Bool) { ... }

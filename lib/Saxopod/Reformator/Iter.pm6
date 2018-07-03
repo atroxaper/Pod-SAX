@@ -1,4 +1,4 @@
-module Pod::SAX::Iter {
+module Saxopod::Reformator::Iter {
 
 	our sub has-content($obj) {
 		return $obj.^attributes.grep({.has_accessor && .name eq '@!contents'});

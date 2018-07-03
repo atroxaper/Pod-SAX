@@ -2,10 +2,10 @@ use v6;
 
 use Test;
 use lib 'lib';
-use Pod::SAX::Common;
-use Pod::SAX::Anchors;
-use Pod::SAX::Reformer;
-use Pod::Reformer::Extension;
+use Saxopod::Reformator;
+use Saxopod::Reformator::Common;
+use Saxopod::Reformator::Anchors;
+use Saxopod::Reformator::Extension;
 
 plan 23;
 
@@ -20,9 +20,9 @@ plan 23;
 		END
 
 	my $pod = get-pod($pod-string);
-	my $reformer;
+	my $reformator;
 	my $status;
-	lives-ok {$reformer = Reformer.new}, 'create Reformer';
+	lives-ok {$reformator = Reformator.new}, 'create Reformer';
 
 	my @para =
 		:() => {
@@ -32,12 +32,12 @@ plan 23;
 		:(:$type where 'D') => {
 			in => { append 'D' ~ $:contents ~ 'D'; }
 		};
-	$reformer.callbacks{Pod::Block::Para.^name} = @para;
-	$reformer.callbacks{Pod::FormattingCode.^name} = @format;
+	$reformator.callbacks{Pod::Block::Para.^name} = @para;
+	$reformator.callbacks{Pod::FormattingCode.^name} = @format;
 
-	lives-ok {$status = $reformer.reform($pod)}, 'call callbacks without exceptions';
+	lives-ok {$status = $reformator.reform($pod)}, 'call callbacks without exceptions';
 	ok $status == True, 'status is True';
-	is $reformer.draft.join('|'), '1|2|D3D|4', 'result array in right order';
+	is $reformator.draft.join('|'), '1|2|D3D|4', 'result array in right order';
 }
 
 {#= get-attributes testing
@@ -50,14 +50,14 @@ plan 23;
 		=end head1
 		END
 	my $pod = get-pod($pod-string);
-	my %pod-attrs = Reformer.get-attributes($pod[0]);
+	my %pod-attrs = Reformator.get-attributes($pod[0]);
 
 	is %pod-attrs.elems, 3, 'pod-info has right size';
 	is %pod-attrs{'level'}, 1, 'heading level equals 1';
 	is %pod-attrs{'config'}.elems, 0, 'heading config is empty';
 	is %pod-attrs{'content'}.elems, 1, 'heading content has one elem';
 
-	%pod-attrs = Reformer.get-attributes($pod[1]);
+	%pod-attrs = Reformator.get-attributes($pod[1]);
 
 	is %pod-attrs.elems, 3, 'pod-info has right size';
 	is %pod-attrs{'config'}.elems, 1, 'heading config has one elem';
@@ -82,11 +82,11 @@ plan 23;
 			in    => { append 'in of head'    }
 		};
 
-	my Reformer $reformer .= new();
-	$reformer.callbacks{Pod::Heading.^name} = @head-calls;
+	my Reformator $reformator .= new();
+	$reformator.callbacks{Pod::Heading.^name} = @head-calls;
 
-	$reformer.reform($pod[0]);
-	is $reformer.draft.join('|'), 'start of head|stop of head', 'callback for start and stop of head';
+	$reformator.reform($pod[0]);
+	is $reformator.draft.join('|'), 'start of head|stop of head', 'callback for start and stop of head';
 }
 
 {#= history support test
@@ -100,7 +100,7 @@ plan 23;
 		END
 
 	my $pod = get-pod($pod-string);
-	my Reformer $reformer .= new();
+	my Reformator $reformator .= new();
 	my @heading =
 		:() => {
 			start => { append "<h$:level>"  },
@@ -117,12 +117,12 @@ plan 23;
 		:(:$type where 'D') => {
 			in => { append 'D' ~ $:contents ~ 'D' }
 		};
-	$reformer.callbacks{Pod::Heading.^name} = @heading;
-	$reformer.callbacks{Pod::Block::Para.^name} = @para;
-	$reformer.callbacks{Pod::FormattingCode.^name} = @format;
+	$reformator.callbacks{Pod::Heading.^name} = @heading;
+	$reformator.callbacks{Pod::Block::Para.^name} = @para;
+	$reformator.callbacks{Pod::FormattingCode.^name} = @format;
 
-	$reformer.reform($pod);
-	is $reformer.draft.join('|'), '<h1>|big para 1|</h1>|2|D3D|4', "history works well";
+	$reformator.reform($pod);
+	is $reformator.draft.join('|'), '<h1>|big para 1|</h1>|2|D3D|4', "history works well";
 }
 
 {#= test storage and clear
@@ -136,21 +136,21 @@ plan 23;
 		END
 
     my $pod = get-pod($pod-string);
-    my Reformer $reformer .= new;
+    my Reformator $reformator .= new;
     my @para =
     	:(:@history where {$_ && $_[*-1] ~~ Pod::Block::Named && $_[*-1].name ~~ 'TITLE'}) => {
     		in => { append $:contents; %:storage{'TITLE'} = $contents }
     	};
-	$reformer.callbacks{Pod::Block::Para.^name} = @para;
-	$reformer.reform($pod);
-	is $reformer.draft.join, 'Synopsis 26 - Documentation', 'call for TITLE ok';
-	is $reformer.storage{'TITLE'}, 'Synopsis 26 - Documentation', 'storage works well';
+	$reformator.callbacks{Pod::Block::Para.^name} = @para;
+	$reformator.reform($pod);
+	is $reformator.draft.join, 'Synopsis 26 - Documentation', 'call for TITLE ok';
+	is $reformator.storage{'TITLE'}, 'Synopsis 26 - Documentation', 'storage works well';
 
-	$reformer.reform($pod);
-	isnt $reformer.draft.join, 'Synopsis 26 - Documentation', 'two calls in a row did different result';
-	$reformer.clear();
-	$reformer.reform($pod);
-	is $reformer.draft.join, 'Synopsis 26 - Documentation', 'two calls in a row with clear did the same result';
+	$reformator.reform($pod);
+	isnt $reformator.draft.join, 'Synopsis 26 - Documentation', 'two calls in a row did different result';
+	$reformator.clear();
+	$reformator.reform($pod);
+	is $reformator.draft.join, 'Synopsis 26 - Documentation', 'two calls in a row with clear did the same result';
 }
 
 {#= test state
@@ -164,7 +164,7 @@ plan 23;
 		END
 
 	my $pod = get-pod($pod-string);
-	my Reformer $reformer .= new;
+	my Reformator $reformator .= new;
 	my @para =
 		:() => {
 			start => { %:state<foo> = 'bar' },
@@ -176,10 +176,10 @@ plan 23;
 			start => { %:state<foo> = 'foobar' },
 			stop  => { append %:state<foo> }
 		};
-	$reformer.callbacks{Pod::Block::Para.^name} = @para;
-	$reformer.callbacks{Pod::Block::Named.^name} = @named;
-	$reformer.reform($pod);
-	is $reformer.draft.join('|'), 'Synopsis 26 - Documentation|bar|foobar', 'state works well';
+	$reformator.callbacks{Pod::Block::Para.^name} = @para;
+	$reformator.callbacks{Pod::Block::Named.^name} = @named;
+	$reformator.reform($pod);
+	is $reformator.draft.join('|'), 'Synopsis 26 - Documentation|bar|foobar', 'state works well';
 }
 
 {#= test anchor calling
@@ -192,7 +192,7 @@ plan 23;
 		=end pod
 		END
 	my $pod = get-pod($pod-string);
-	my Reformer $reformer .= new;
+	my Reformator $reformator .= new;
 	my @para =
 		:() => {
 			start => { append SimpleAnchor.new(:template('<p><%=para1%></p>'), :priority(0)) },
@@ -205,10 +205,10 @@ plan 23;
 			stop  => { %:storage<para1> = 'p1'; %storage<para2> = 'p2';
 				%storage<para3> = 'p3'; %storage<TITLE> = 'title'; %storage<foo> = 'bar'; }
 		};
-	$reformer.callbacks{Pod::Block::Para.^name} = @para;
-	$reformer.callbacks{Pod::Block::Named.^name} = @named;
-	$reformer.reform($pod);
-	is $reformer.get-result, '<title>title</title><p>p1</p><p>p2</p><p>p3</p>',
+	$reformator.callbacks{Pod::Block::Para.^name} = @para;
+	$reformator.callbacks{Pod::Block::Named.^name} = @named;
+	$reformator.reform($pod);
+	is $reformator.get-result, '<title>title</title><p>p1</p><p>p2</p><p>p3</p>',
 		'result and anchors calling without priority works well';
 }
 
@@ -241,7 +241,7 @@ plan 23;
     }
   }
 
-  my Reformer $reformer .= new(extensions => (TestExt.new));
+  my Reformator $reformator .= new(extensions => (TestExt.new));
   my ($para1, $para2, $named1, $all) = False, False, False, False;
   my @para =
     :(:$ext-para where 2, :$ext-para-more where 3) => {
@@ -254,9 +254,9 @@ plan 23;
     :(:$name where 'TITLE', :$ext-named where 1) => {\
       start => { $named1 = True },
     };
-  $reformer.callbacks{Pod::Block::Para.^name} = @para;
-  $reformer.callbacks{Pod::Block::Named.^name} = @named;
-  $reformer.reform($pod);
+  $reformator.callbacks{Pod::Block::Para.^name} = @para;
+  $reformator.callbacks{Pod::Block::Named.^name} = @named;
+  $reformator.reform($pod);
 
   ok $para1, 'callback with arg from extension';
   ok $para2, 'callback with two args from extension';

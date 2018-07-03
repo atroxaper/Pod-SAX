@@ -1,10 +1,10 @@
-module Pod::SAX::Goes::HTML {
-	use Pod::SAX::Reformer;
-	use Pod::SAX::Anchors;
-	use Pod::SAX::Common;
-	use Pod::SAX::Iter;
-	use Pod::Reformer::Extension::List::ListHelper;
-	use Pod::Reformer::Extension::List::ItemType;
+module HTML {
+	use Saxopod::Reformator;
+	use Saxopod::Reformator::Anchors;
+	use Saxopod::Reformator::Common;
+	use Saxopod::Reformator::Iter;
+	use Saxopod::Reformator::Extension::List::ListHelper;
+	use Saxopod::Reformator::Extension::List::ItemType;
 
 	my $N = "\n";
 
@@ -252,16 +252,16 @@ module Pod::SAX::Goes::HTML {
     }
 
 	sub make-reformer() is export {
-		my Reformer $reformer .= new(extensions => (ListHelper.new));
-		$reformer.callbacks{Pod::Block::Comment.^name} = @comment;
-		$reformer.callbacks{Pod::Block::Named.^name} = @named;
-		$reformer.callbacks{Pod::Block::Para.^name} = @para;
-		$reformer.callbacks{Pod::Block::Table.^name} = @table;
-		$reformer.callbacks{Pod::FormattingCode.^name} = @formatting;
-		$reformer.callbacks{Pod::Heading.^name} = @heading;
-		$reformer.callbacks{Pod::Block::Code.^name} = @code;
-		$reformer.callbacks{Pod::Item.^name} = @item;
+		my Reformator $reformator .= new(extensions => (ListHelper.new));
+		$reformator.callbacks{Pod::Block::Comment.^name} = @comment;
+		$reformator.callbacks{Pod::Block::Named.^name} = @named;
+		$reformator.callbacks{Pod::Block::Para.^name} = @para;
+		$reformator.callbacks{Pod::Block::Table.^name} = @table;
+		$reformator.callbacks{Pod::FormattingCode.^name} = @formatting;
+		$reformator.callbacks{Pod::Heading.^name} = @heading;
+		$reformator.callbacks{Pod::Block::Code.^name} = @code;
+		$reformator.callbacks{Pod::Item.^name} = @item;
 
-		return $reformer;
+		return $reformator;
 	}
 }

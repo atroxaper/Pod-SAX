@@ -2,9 +2,9 @@ use v6;
 
 use Test;
 use lib 'lib';
-use Pod::SAX::Goes::HTML;
-use Pod::SAX::Reformer;
-use Pod::SAX::Common;
+use Saxopod::Format::Html::HTML;
+use Saxopod::Reformator;
+use Saxopod::Reformator::Common;
 
 plan 31;
 
@@ -16,10 +16,10 @@ sub rm-n($str) {
 }
 
 sub get-test-result(Str $source --> Str) {
-	my Reformer $reformer = make-reformer;
+	my Reformator $reformator = make-reformer;
 	my $pod = get-pod($source);
-	$reformer.reform($pod);
-	return $reformer.get-result.&rm-n;
+	$reformator.reform($pod);
+	return $reformator.get-result.&rm-n;
 }
 
 {# start and end of HTML file

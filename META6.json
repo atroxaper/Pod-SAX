@@ -3,7 +3,6 @@
     "source-url": "Write me!",
     "depends": [],
     "provides": {
-        "Saxopod::Reformer": "lib/Saxopod/Reformer.pm6",
         "Saxopod::Reformator::Anchors": "lib/Saxopod/Reformator/Anchors.pm6",
         "Reformator::Reformer": "lib/Reformator/Reformer.pm6",
         "Saxopod::Reformator::Extension": "lib/Saxopod/Reformator/Extension.pm6",
@@ -11,9 +10,11 @@
         "Reformator::Extension::List::ItemType": "lib/Reformator/Extension/List/ItemType.pm6",
         "Reformator::Extension::List::ListHelper": "lib/Reformator/Extension/List/ListHelper.pm6",
         "Reformator::Extension::Extension": "lib/Reformator/Extension/Extension.pm6",
+        "Saxopod::Format::Html::HTML": "lib/Saxopod/Format/Html/HTML.pm6",
         "Reformator::Extension::List::ItemHelper": "lib/Reformator/Extension/List/ItemHelper.pm6",
         "Saxopod::Reformator::Iter": "lib/Saxopod/Reformator/Iter.pm6",
-        "Saxopod::Reformator::Common": "lib/Saxopod/Reformator/Common.pm6"
+        "Saxopod::Reformator::Common": "lib/Saxopod/Reformator/Common.pm6",
+        "Saxopod::Reformator": "lib/Saxopod/Reformator.pm6"
     },
     "name": "SAXoPOD",
     "description": "Write me!",
