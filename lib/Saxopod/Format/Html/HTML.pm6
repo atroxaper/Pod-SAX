@@ -121,18 +121,6 @@ module HTML {
 			start => { append qq[<section>{$N}<h1>$:name\</h1>{$N}]; },
 			stop =>  { append qq[</section>{$N}]; }
 		};
-	# =output #
-	push @named,
-		:(:$name where 'output') => {
-			start => { append q[<samp>]; },
-			stop =>  { append q[</samp>]; }
-		};
-	push @para,
-		:(:@history where *.&under-name('output')) => {
-			start => { True; },
-			in =>    { append $:contents },
-			stop =>  { append q[</br>]; }
-		};
 	# =table #
 	push @table,
 		:() => {

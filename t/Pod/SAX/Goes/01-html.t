@@ -6,7 +6,7 @@ use Saxopod::Format::Html::HTML;
 use Saxopod::Reformator;
 use Saxopod::Reformator::Common;
 
-plan 31;
+plan 30;
 
 # some consts #
 my $heading-to-top = q[<a class="u" href="#___top" title="go to top document">];
@@ -185,30 +185,6 @@ sub get-test-result(Str $source --> Str) {
 		END
 
 	is $/.postmatch, $expect.&rm-n, 'table of contents';
-}
-
-{#| =begin output test. todo Grammar parses paragraphs wrong
-	my $pod-str = qq:to[END];
-		=begin output
-		Name: Magic::Necrotelecomnicon:
-
-		Desc: Base class for comms necromancy hierarchy
-
-		Attrs:
-
-			.elemental : Source of all power
-
-		=end output
-		END
-	my $expect = qq:to[END];
-		<samp>
-		Name: Magic::Necrotelecomnicon:</br>
-		Desc: Base class for comms necromancy hierarchy</br>
-		Attrs:</br>
-		.elemental : Source of all power</br>
-		</samp>
-		END
-	is get-test-result($pod-str), $expect.&rm-n, '=output';
 }
 
 {# Lists
