@@ -24,8 +24,7 @@ my $pod-string = qq:to[END];
 	=end pod
 	END
 my $pod = get-pod($pod-string);
-my PodIterator $iter .= new();
-$iter.init($pod);
+my PodIterator $iter .= new($pod);
 my (@pair, @delta, @contents, @items) = ();
 while (@pair = $iter.get-next)[0].DEFINITE {
 	@delta.push(@pair[1]);

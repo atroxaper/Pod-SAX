@@ -6,7 +6,7 @@ use Saxopod::Reformator::Anchors;
 
 plan 9;
 
-{#= test SimpeleAnchor
+{#= test SimpleAnchor
 	my SimpleAnchor $anchor .= new(:template('<title><%=title%></title>'), :storage({}));
 	nok $anchor.prepare(), 'prepare of anchor returns false';
 	$anchor.storage = title => 'this is test title';

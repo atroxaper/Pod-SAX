@@ -14,7 +14,15 @@ module Saxopod::Reformator::Iter {
 		has $!index;	# index of next element in @content
 		has Bool $!stop;
 
-		# TODO make a special .new method to call init method inside
+		method new($pod) {
+			self.bless(:$pod);
+		}
+
+		submethod TWEAK(:$pod where *.defined) {
+			$!current = (Start.new(contents => $pod.Array), 0);
+			$!index = 0;
+			$!stop = False;
+		}
 
 		method get-next(--> List) {
 			return (Nil, 0) if $!stop;
@@ -35,12 +43,6 @@ module Saxopod::Reformator::Iter {
 			} else {
 				return ($next, 0);
 			}
-		}
-
-		method init($start) {
-			$!current = (Start.new(contents => $start.Array), 0);
-			$!index = 0;
-			$!stop = False;
 		}
 
 		method stop(--> List) {

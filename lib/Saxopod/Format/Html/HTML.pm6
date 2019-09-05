@@ -87,7 +87,7 @@ module HTML {
 				my $bare-id = escape_id($bare);
 				append qq[<h$:level id="{$bare-id}">];
 				my \toc = %:storage<toc> // [];
-				push toc, %(:level($:level), :id($bare-id), :show($bare));
+				push toc, %(:$:level, :id($bare-id), :show($bare));
 				%:storage<toc> = toc;
 			},
 			stop => { append qq[</h$:level>]; }
@@ -129,7 +129,7 @@ module HTML {
 				# render headers #
 				if (@:headers && +@:headers > 0) {
 					append qq[<thead>{$N}<tr>{$N}];
-					for @headers -> $header {
+					for @:headers -> $header {
 						append qq[<th>{$header}</th>{$N}];
 					}
 					append qq[</tr>{$N}</thead>{$N}];
@@ -168,7 +168,7 @@ module HTML {
 						return True, '#' ~ $found;
 					}
 					my %custom = search => "$m<extern>";
-					$good-meta = CallbackAnchor.new(:callback(&test), :custom(%custom));
+					$good-meta = CallbackAnchor.new(:callback(&test), :%custom);
 			 	} elsif ($m<scheme> && $m<scheme><type> ~~ any('http', 'https')
 			 			&& $m<extern> && $m<extern><from-root>.from == $m<extern><from-root>.to) {
 			 		$good-meta = "$m<extern><path>";

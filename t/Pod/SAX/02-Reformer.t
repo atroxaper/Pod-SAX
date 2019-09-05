@@ -7,7 +7,7 @@ use Saxopod::Reformator::Common;
 use Saxopod::Reformator::Anchors;
 use Saxopod::Reformator::Extension;
 
-plan 23;
+plan 16;
 
 {
 	my $pod-string = qq:to[END];
@@ -38,30 +38,6 @@ plan 23;
 	lives-ok {$status = $reformator.reform($pod)}, 'call callbacks without exceptions';
 	ok $status == True, 'status is True';
 	is $reformator.draft.join('|'), '1|2|D3D|4', 'result array in right order';
-}
-
-{#= get-attributes testing
-	my $pod-string = qq:to/END/;
-		=begin head1
-		123
-		=end head1
-		=begin head1 :huge
-		456
-		=end head1
-		END
-	my $pod = get-pod($pod-string);
-	my %pod-attrs = Reformator.get-attributes($pod[0]);
-
-	is %pod-attrs.elems, 3, 'pod-info has right size';
-	is %pod-attrs{'level'}, 1, 'heading level equals 1';
-	is %pod-attrs{'config'}.elems, 0, 'heading config is empty';
-	is %pod-attrs{'content'}.elems, 1, 'heading content has one elem';
-
-	%pod-attrs = Reformator.get-attributes($pod[1]);
-
-	is %pod-attrs.elems, 3, 'pod-info has right size';
-	is %pod-attrs{'config'}.elems, 1, 'heading config has one elem';
-	is %pod-attrs{'config'}.{'huge'}, True, 'heading config has elem huge => 1';
 }
 
 {#= test basic functionality
@@ -139,7 +115,7 @@ plan 23;
     my Reformator $reformator .= new;
     my @para =
     	:(:@history where {$_ && $_[*-1] ~~ Pod::Block::Named && $_[*-1].name ~~ 'TITLE'}) => {
-    		in => { append $:contents; %:storage{'TITLE'} = $contents }
+    		in => { append $:contents; %:storage{'TITLE'} = $:contents }
     	};
 	$reformator.callbacks{Pod::Block::Para.^name} = @para;
 	$reformator.reform($pod);
@@ -202,8 +178,8 @@ plan 23;
 	my @named =
 		:(:$name where 'TITLE') => { # TODO why we need '^'
 			start => { append SimpleAnchor.new(:template('<title><%=TITLE%></title>'), :priority(0)) },
-			stop  => { %:storage<para1> = 'p1'; %storage<para2> = 'p2';
-				%storage<para3> = 'p3'; %storage<TITLE> = 'title'; %storage<foo> = 'bar'; }
+			stop  => { %:storage<para1> = 'p1'; %:storage<para2> = 'p2';
+				%:storage<para3> = 'p3'; %:storage<TITLE> = 'title'; %:storage<foo> = 'bar'; }
 		};
 	$reformator.callbacks{Pod::Block::Para.^name} = @para;
 	$reformator.callbacks{Pod::Block::Named.^name} = @named;
@@ -234,8 +210,8 @@ plan 23;
       my @contents := $pod.contents;
       my @result[@contents.elems];
       for @contents.kv -> $i, $content {
-        @result[$i] = %('ext-named' => 1) if $content ~~ Pod::Block::Named;
-        @result[$i] = %('ext-para' => 2, 'ext-para-more' => 3) if $content ~~ Pod::Block::Para;
+        @result[$i] = %(ext-named => 1) if $content ~~ Pod::Block::Named;
+        @result[$i] = %(ext-para => 2, ext-para-more => 3) if $content ~~ Pod::Block::Para;
       }
       return @result;
     }

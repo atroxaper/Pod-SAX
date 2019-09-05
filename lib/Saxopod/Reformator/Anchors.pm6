@@ -1,5 +1,6 @@
 module Saxopod::Reformator::Anchors {
 	use Saxopod::Reformator::Common;
+	use Signature::Filter;
 
 	role Anchor is export {
 		method prepared(--> Bool) { ... }
@@ -32,10 +33,10 @@ module Saxopod::Reformator::Anchors {
 				$this.prepared = False;
 				return $this.prepared;
 			}} /;
-			$!result = $.template;
-			$!result ~~ s:g/ '<%' ['=']? $<key>=[ [ <!before '%>' > . ]* ] '%>' /%.storage{$<key>.Str}/;
-			$.prepared = True;
-			return $.prepared;
+			$!result = $!template;
+			$!result ~~ s:g/ '<%' ['=']? $<key>=[ [ <!before '%>' > . ]* ] '%>' /%!storage{$<key>.Str}/;
+			$!prepared = True;
+			return $!prepared;
 		}
 	}
 
@@ -59,14 +60,13 @@ module Saxopod::Reformator::Anchors {
 
 		method prepare() {
 			my &func = &.callback;
-			my %args = storage => %.storage, draft => @.draft, custom => %.custom;
-			%args = filter-args(&func.signature, %args);
-			my @res = &func(|%args);
+			my %args = :%!storage, :@!draft, :%!custom;
+			my @res = &func.&call-with(%args);
 			if @res[0] == True {
-				$.prepared = True;
+				$!prepared = True;
 				$!result = @res[1];
 			}
-			return $.prepared;
+			return $!prepared;
 		}
 	}
 

@@ -9,8 +9,7 @@ has Int $.closes-lists is rw = 0;
 has Bool $.first is rw = False;
 #|Is it last item in list or sublist.
 has Bool $.last is rw = False;
-#|[Is it break item.
-#Next item will be 'continue' and with the same level.]
+#|Is it break item. Next item will be 'continue' and with the same level.
 has Bool $.paused is rw = False;
 #|Is it continued item after list break.
 has Bool $.continued is rw = False;
@@ -19,11 +18,11 @@ has ItemType $.type is rw;
 #|Level of item. Minimal level is 0.
 has Int $.level is rw;
 #|[Position of item in his level. Minimal position is 0.
-#For Numbered item type it means item's number]
+# For Numbered item type it means item's number]
 has Int $.position is rw;
 #|[Array of positions of all item's parents.
-#0-level-parent position stored in 0 element,
-#current element position stored in $!level element.]
+# 0-level-parent position stored in 0 element,
+# current element position stored in $!level element.]
 has @.tree-address is rw;
 
 multi method WHICH(ItemHelper:D:) {

@@ -5,7 +5,7 @@ use lib 'lib';
 use Saxopod::Reformator;
 use Saxopod::Reformator::Common;
 
-plan 18;
+plan 25;
 
 {#= simple test of parsing a string to Pod
 	my $pod-string = qq:to[END];
@@ -52,7 +52,7 @@ plan 18;
 	is $reformator.draft.join('|'), 'under named|under title', "selector's helpers works well"
 }
 
-{#| grammar MetaL test
+{#= grammar MetaL test
 	my $match = MetaL.parse('http://google.com#boom');
 	is $match<scheme><type>, 'http', 'scheme found';
 	ok $match<extern><from-root>.from != $match<extern><from-root>.to, 'from root';
@@ -74,4 +74,28 @@ plan 18;
 	is $match<extern>, 'link', 'only extern';
 	nok $match<scheme>, 'without scheme';
 	nok $match<intern>, 'without intern';
+}
+
+{#= get-attributes testing
+	my $pod-string = qq:to/END/;
+		=begin head1
+		123
+		=end head1
+		=begin head1 :huge
+		456
+		=end head1
+		END
+	my $pod = get-pod($pod-string);
+	my %pod-attrs = get-attributes($pod[0]);
+
+	is %pod-attrs.elems, 3, 'pod-info has right size';
+	is %pod-attrs{'level'}, 1, 'heading level equals 1';
+	is %pod-attrs{'config'}.elems, 0, 'heading config is empty';
+	is %pod-attrs{'content'}.elems, 1, 'heading content has one elem';
+
+	%pod-attrs = get-attributes($pod[1]);
+
+	is %pod-attrs.elems, 3, 'pod-info has right size';
+	is %pod-attrs{'config'}.elems, 1, 'heading config has one elem';
+	is %pod-attrs{'config'}.{'huge'}, True, 'heading config has elem huge => 1';
 }

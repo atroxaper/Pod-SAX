@@ -3,6 +3,7 @@ class Reformator {
 	use Saxopod::Reformator::Iter;
 	use Saxopod::Reformator::Anchors;
 	use Saxopod::Reformator::Common;
+	use Signature::Filter;
 
 	has %.callbacks is rw;
 	has @.allowable-pod-classes is rw = Pod::Block, Pod::Config;
@@ -12,8 +13,8 @@ class Reformator {
 	has @.extensions;
 
 	method clear() {
-		@.draft = ();
-		%.storage = ();
+		@!draft = ();
+		%!storage = ();
 	}
 
 	multi method reform(@pod) {
@@ -21,8 +22,7 @@ class Reformator {
 	}
 
 	multi method reform($pod) {
-		$!iter .= new;
-		$!iter.init($pod);
+		$!iter .= new($pod);
 		my @history;
     my @*draft;
 		self!visit(($!iter.get-next)[0], @history, %());
@@ -31,9 +31,9 @@ class Reformator {
 	}
 
 	method !visit($pod, @history, %ext-arg) {
-		my %attrs = self.make-attrs($pod, self, @history, %(), %ext-arg);
+		my %attrs = %(|$pod.&get-attributes, instance => $pod, :%!storage, :@history, state => %(), |%ext-arg);
     my @ext-args := self!make-extensions-args($pod);
-		my @need-to-call = self!get-satisfy($pod.^name, %attrs);
+		my @need-to-call := self!get-satisfy($pod.^name, %attrs);
 
 		self!call(@need-to-call, 'start', %attrs);
 
@@ -53,31 +53,28 @@ class Reformator {
 	}
 
 	method !call(@need-to-call, $type where any('start', 'stop', 'in'), %attrs) {
-		for @need-to-call.grep({? $_{$type}}).map({$_{$type}}) -> $sub {
-			my %args = filter-args($sub, %attrs);
-			if %args ~~ $sub.signature {
-				return if $sub(|%args);
-			}
-		}
+		@need-to-call.map({$_{$type}}).grep(*.defined).first(-> $sub {
+			my %args = $sub.&filter-params(%attrs);
+			so $sub.&can-call-with(%args) && $sub(|%args);
+		});
 	}
 
 	method !get-satisfy($pod-name, %args) {
-	  return () without %!callbacks{$pod-name};
-		my @result = ();
-		for %!callbacks{$pod-name}.values.map({ .key, .value }) -> ($selector, $functions) {
-			my %need-args = filter-args($selector, %args);
-			if (($selector ~~ Signature && %need-args ~~ $selector)
-			|| ($selector ~~ Sub && %need-args ~~ $selector.signature && $selector(|%need-args))) {
-				@result.push($functions);
-			}
+		with %!callbacks{$pod-name} -> $for-name {
+			return $for-name.values.grep({
+				my $selector = .key;
+				my %need-args = $selector.&filter-params(%args);
+				so ($selector.&can-call-with(%need-args)
+				&& ($selector !~~ Sub || $selector(|%need-args)));
+			}).map(*.value).List;
 		}
-		return @result;
+		return ();
 	}
 
 	method get-result() {
 		# sort by priority and get anchor and its index in draft #
-		my @anchors = @.draft.grep({$_ ~~ Anchor}).sort({$^a.priority <=> $^b.priority});
-		init-anchor($_, {:draft(@.draft), :storage(%.storage)}) for @anchors;
+		my @anchors = @!draft.grep({$_ ~~ Anchor}).sort({$^a.priority <=> $^b.priority});
+		init-anchor($_, {:@!draft, :%!storage}) for @anchors;
 
 		loop (my $i = 0; $i < +@anchors; ++$i) {
 			my $is-somebody-false = True;
@@ -88,31 +85,14 @@ class Reformator {
 			}
 			last if $is-somebody-false;
 		}
-		return @.draft.join;
+		return @!draft.join;
 	}
 
-	# static methods #
-	method get-attributes($obj where {defined $obj}) {
-		my %result;
-		for $obj.^attributes {
-			if ($_.has_accessor) {
-				my $name-str = $_.name.substr(2);
-				%result{$name-str} = $obj."$name-str"();
-			}
-		}
-		return %result;
-	}
-
-	method make-attrs($pod, $caller, @history, %state, %ext-args) {
-		my %result = self.get-attributes($pod);
-		%result<instance> = $pod;
-		%result<history> = @history;
-		%result<storage> = $caller.storage;
-		%result<state> = %state;
-		%result.push(%ext-args.kv);
-		return %result;
-	}
-
+	#|[Use extensions (if they exists) and produce additional args for
+	#| each need specified pod content.
+	#|
+	#| Returns: an array with additional args hashes for each element from
+	#| pod's content.]
 	method !make-extensions-args($pod) {
 	  my @result;
 	  push @result, %() for $pod.contents;

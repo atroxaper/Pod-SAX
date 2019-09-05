@@ -2,23 +2,32 @@ module Saxopod::Reformator::Common {
 
 	use Saxopod::Reformator::Iter;
 
-	sub get-pod(Str $source) is export {
+	#| Retrieve POD object from source content.
+	sub get-pod(Str:D $source) is export {
     use MONKEY-SEE-NO-EVAL;
 		EVAL $source ~ "\n\$=pod";
 	}
 
-	sub under-name(@history, $name --> Bool) is export {
+	#|[Check that specified @history has Named pod block with specified name as \
+	#| the last its element. The sub is useful in case you want to filter pod
+	#| elements.]
+	sub under-name(@history, $name --> Bool:D) is export {
 		return so @history && @history[*-1] ~~ Pod::Block::Named && @history[*-1].name ~~ $name;
 	}
 
-	sub under-type(@history, $type --> Bool) is export {
+	#|[Check that specified @history has pod block with specified type as \
+	#| the last its element. The sub is useful in case you want to filter pod
+	#| elements.]
+	sub under-type(@history, $type --> Bool:D) is export {
 		return so @history && @history[*-1] ~~ $type;
 	}
 
+	#| Append specified arguments to Reformator's draft.
   sub append(*@a) is export {
       push @*draft, |@a;
   }
 
+	#| Grammar for links metadata.
 	grammar MetaL is export {
 		token TOP {
 			<scheme>?
@@ -36,24 +45,21 @@ module Saxopod::Reformator::Common {
 		}
 	}
 
-	sub filter-args($sub,  %args) is export {
-		my $signature = $sub ~~ Signature ?? $sub !! $sub.signature;
-		my @param-names = $signature.params.map: *.name.substr(1);
-		my %result;
-		for %args.keys -> $key {
-			%result{$key} = %args{$key} if $key eq any(@param-names);
-		}
-		return %result;
-	}
-
 	sub get-bare-content($pod) is export {
 		my @result;
-		my PodIterator $iter .= new;
-		$iter.init($pod);
+		my PodIterator $iter .= new($pod);
 		my @pair;
 		while (@pair = $iter.get-next)[0].DEFINITE {
 			@result.push(@pair[0]) if @pair[1] == 0;
 		}
 		return @result.join;
+	}
+
+	sub get-attributes($obj where *.defined) is export {
+	return $obj.^attributes
+		.grep(*.has_accessor)
+		.map(*.name.substr: 2)
+		.map(-> $name { ($name => $obj."$name"()) })
+		.Hash;
 	}
 }

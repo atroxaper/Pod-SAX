@@ -1,25 +1,23 @@
 {
-    "license": "Choose me!",
-    "source-url": "Write me!",
-    "depends": [],
-    "provides": {
-        "Saxopod::Reformator::Anchors": "lib/Saxopod/Reformator/Anchors.pm6",
-        "Reformator::Reformer": "lib/Reformator/Reformer.pm6",
-        "Saxopod::Reformator::Extension": "lib/Saxopod/Reformator/Extension.pm6",
-        "SAXoPOD": "lib/SAXoPOD.pm6",
-        "Reformator::Extension::List::ItemType": "lib/Reformator/Extension/List/ItemType.pm6",
-        "Reformator::Extension::List::ListHelper": "lib/Reformator/Extension/List/ListHelper.pm6",
-        "Reformator::Extension::Extension": "lib/Reformator/Extension/Extension.pm6",
-        "Saxopod::Format::Html::HTML": "lib/Saxopod/Format/Html/HTML.pm6",
-        "Reformator::Extension::List::ItemHelper": "lib/Reformator/Extension/List/ItemHelper.pm6",
-        "Saxopod::Reformator::Iter": "lib/Saxopod/Reformator/Iter.pm6",
-        "Saxopod::Reformator::Common": "lib/Saxopod/Reformator/Common.pm6",
-        "Saxopod::Reformator": "lib/Saxopod/Reformator.pm6"
-    },
-    "name": "SAXoPOD",
-    "description": "Write me!",
-    "resources": [],
-    "perl": "6.*",
-    "version": "0.1",
-    "authors": []
+  "name": "SAXoPOD",
+  "description": "Write me!",
+  "version": "0.1",
+  "perl": "6.*",
+  "authors": [],
+  "auth": "atroxaper",
+  "depends": [],
+  "provides": {
+    "Saxopod::Format::Html::HTML": "lib/Saxopod/Format/Html/HTML.pm6",
+    "Saxopod::Reformator": "lib/Saxopod/Reformator.pm6",
+    "Saxopod::Reformator::Anchors": "lib/Saxopod/Reformator/Anchors.pm6",
+    "Saxopod::Reformator::Common": "lib/Saxopod/Reformator/Common.pm6",
+    "Saxopod::Reformator::Extension": "lib/Saxopod/Reformator/Extension.pm6",
+    "Saxopod::Reformator::Extension::List::ItemHelper": "lib/Saxopod/Reformator/Extension/List/ItemHelper.pm6",
+    "Saxopod::Reformator::Extension::List::ItemType": "lib/Saxopod/Reformator/Extension/List/ItemType.pm6",
+    "Saxopod::Reformator::Extension::List::ListHelper": "lib/Saxopod/Reformator/Extension/List/ListHelper.pm6",
+    "Saxopod::Reformator::Iter": "lib/Saxopod/Reformator/Iter.pm6"
+  },
+  "resources": [],
+  "license": "Choose me!",
+  "source-url": "Write me!"
 }

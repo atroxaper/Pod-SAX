@@ -12,8 +12,8 @@ On work currently. You can see example of the module's work at http://atroxaper.
 
 * Most part of L<>
 * Case then we have D<> (or D<|;>) and corresponding L<defn:>
-* Formating B<> R<> I<> C<>
-* Code blocks with formating
+* Formatting B<> R<> I<> C<>
+* Code blocks with formatting
 * Tables
 * Table of contents
 
